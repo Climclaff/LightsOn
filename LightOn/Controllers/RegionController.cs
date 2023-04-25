@@ -2,7 +2,7 @@
 using LightOn.Helpers;
 using LightOn.Models;
 using LightOn.Repositories;
-using LightOn.Services;
+using LightOn.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -71,10 +71,24 @@ namespace LightOn.Controllers
         }
 
         [HttpGet]
-        [Route("GetRegionsRange")]
-        public async Task<IActionResult> GetRegionsRangeAsync([FromQuery] int offset, int count)
+        [Route("GetRange")]
+        public async Task<IActionResult> GetRangeAsync([FromQuery] int offset, int count)
         {
-            var response = await _regionService.GetRegionsRangeAsync(offset, count);
+            var response = await _regionService.GetRangeAsync(offset, count);
+
+            if (!response.Success)
+            {
+                return BadRequest(response.ErrorMessage);
+            }
+
+            return Ok(response.Data);
+        }
+
+        [HttpGet]
+        [Route("GetAllRegions")]
+        public async Task<IActionResult> GetAllRegionsAsync()
+        {
+            var response = await _regionService.GetAllAsync();
 
             if (!response.Success)
             {

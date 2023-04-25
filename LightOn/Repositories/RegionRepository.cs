@@ -1,7 +1,8 @@
 ﻿using LightOn.Data;
 using LightOn.Exceptions;
 using LightOn.Models;
-using LightOn.Services;
+using LightOn.Repositories.Interfaces;
+using LightOn.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 #pragma warning disable CS8602 
 #pragma warning disable CS8603 
@@ -75,7 +76,7 @@ namespace LightOn.Repositories
             }
         }
 
-        public async Task<List<Region>> GetRegionsRangeAsync(int offset, int count)
+        public async Task<List<Region>> GetRangeAsync(int offset, int count)
         {
             var totalRegions = await _context.Regions.CountAsync();
 
@@ -87,6 +88,19 @@ namespace LightOn.Repositories
             var regions = await _context.Regions.OrderBy(r => r.Id).Skip(offset).Take(Math.Min(count, totalRegions - offset)).ToListAsync();
 
             return regions;
+        }
+
+        public async Task<List<Region>> GetAllAsync()
+        {
+            try
+            {
+                return await _context.Regions.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to get all regions", ex);
+                throw new RepositoryException("Failed to get all regions", ex);
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace LightOn.Services
+﻿using LightOn.Services.Interfaces;
+
+namespace LightOn.Services
 {
     public class LoggingService : ILoggingService
     {

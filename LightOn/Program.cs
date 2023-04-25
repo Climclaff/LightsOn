@@ -1,7 +1,9 @@
 using LightOn.Data;
 using LightOn.Models;
 using LightOn.Repositories;
+using LightOn.Repositories.Interfaces;
 using LightOn.Services;
+using LightOn.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

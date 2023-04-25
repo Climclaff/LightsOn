@@ -2,7 +2,8 @@
 using LightOn.Exceptions;
 using LightOn.Helpers;
 using LightOn.Models;
-using LightOn.Repositories;
+using LightOn.Repositories.Interfaces;
+using LightOn.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace LightOn.Services
@@ -79,16 +80,28 @@ namespace LightOn.Services
             }
         }
 
-        public async Task<ServiceResponse<List<Region>>> GetRegionsRangeAsync(int offset, int count)
+        public async Task<ServiceResponse<List<Region>>> GetRangeAsync(int offset, int count)
         {
             try
             {
-                var regions = await _repository.GetRegionsRangeAsync(offset, count);
+                var regions = await _repository.GetRangeAsync(offset, count);
                 return new ServiceResponse<List<Region>> { Success = true, Data = regions };
             }
             catch (Exception ex)
             {
                 _logger.LogError($"An error occurred while getting regions with offeset {offset}", ex);
+                return new ServiceResponse<List<Region>> { Success = false, ErrorMessage = ex.Message };
+            }
+        }
+        public async Task<ServiceResponse<List<Region>>> GetAllAsync()
+        {
+            try
+            {
+                var result = await _repository.GetAllAsync();
+                return new ServiceResponse<List<Region>> {Success = true, Data = result};
+            }
+            catch (Exception ex)
+            {
                 return new ServiceResponse<List<Region>> { Success = false, ErrorMessage = ex.Message };
             }
         }
