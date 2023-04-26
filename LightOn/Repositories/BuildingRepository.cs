@@ -40,7 +40,7 @@ namespace LightOn.Repositories
             if (building == null)
             {
                 _logger.LogError($"Error deleting building from database with ID {id}", null);
-                return false;
+                throw new NotFoundException($"Building with id {id} not found.");
             }
             _context.Buildings.Remove(building);
             await _context.SaveChangesAsync();
@@ -52,7 +52,17 @@ namespace LightOn.Repositories
         {
             try
             {
-                return await _context.Buildings.FindAsync(id);
+                var result = await _context.Buildings.FindAsync(id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Building with id {id} not found.");
+                }
+                return result;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while finding building with ID {id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {
@@ -65,9 +75,19 @@ namespace LightOn.Repositories
         {
             try
             {
+                var result = await _context.Buildings.FindAsync(building.Id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Building with id {building.Id} not found.");
+                }
                 _context.Entry(building).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
                 return true;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while updating building with ID {building.Id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {

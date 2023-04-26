@@ -42,6 +42,10 @@ namespace LightOn.Services
                 }
                 return new ServiceResponse<Transformer> { Success = true };
             }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Transformer> { Success = false, NotFound = true, ErrorMessage = ex.Message };
+            }
             catch (Exception ex)
             {
                 return new ServiceResponse<Transformer> { Success = false, ErrorMessage = ex.Message };
@@ -57,9 +61,13 @@ namespace LightOn.Services
                 var transformer = await _repository.GetByIdAsync(id);
                 if (transformer == null)
                 {
-                    return new ServiceResponse<Transformer> { Success = false, ErrorMessage = $"Transformer with ID {id} was not found" };
+                    return new ServiceResponse<Transformer> { Success = false, ErrorMessage = $"Transformer with ID {id} was not found", NotFound = true };
                 }
                 return new ServiceResponse<Transformer> { Success = true, Data = transformer };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Transformer> { Success = false, ErrorMessage = ex.Message, NotFound = true };
             }
             catch (Exception ex)
             {
@@ -73,6 +81,10 @@ namespace LightOn.Services
             {
                 await _repository.UpdateAsync(transformer);
                 return new ServiceResponse<Transformer> { Success = true };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Transformer> { Success = false, NotFound = true, ErrorMessage = ex.Message };
             }
             catch (Exception ex)
             {

@@ -27,11 +27,15 @@ namespace LightOn.Controllers
         public async Task<IActionResult> DeleteRegion([FromQuery] int id)
         {
             ServiceResponse<Region> result = await _regionService.DeleteAsync(id);
+            if (result.NotFound)
+            {
+                return NotFound();
+            }
             if (result.Success)
             {
                 return Ok();
-            }
-            return BadRequest(result.ErrorMessage);
+            }          
+            return StatusCode(500, result.ErrorMessage);
         }
         [HttpPost]
         [Route("CreateRegion")]
@@ -49,53 +53,64 @@ namespace LightOn.Controllers
         public async Task<IActionResult> UpdateRegion([FromBody] Region region)
         {
             ServiceResponse<Region> result = await _regionService.UpdateAsync(region);
+            if (result.NotFound)
+            {
+                return NotFound();
+            }
             if (result.Success)
             {
                 return Ok();
             }
-            return BadRequest(result.ErrorMessage);
+            return StatusCode(500, result.ErrorMessage);
 
         }
         [HttpGet]
         [Route("FindRegionById")]
         public async Task<IActionResult> FindRegionById([FromQuery] int id)
         {
-            var response = await _regionService.GetByIdAsync(id);
+            var result = await _regionService.GetByIdAsync(id);
 
-            if (!response.Success)
+            if (result.NotFound)
             {
-                return BadRequest(response.ErrorMessage);
+                return NotFound();
             }
-
-            return Ok(response.Data);
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            return StatusCode(500, result.ErrorMessage);
         }
 
         [HttpGet]
         [Route("GetRange")]
         public async Task<IActionResult> GetRangeAsync([FromQuery] int offset, int count)
         {
-            var response = await _regionService.GetRangeAsync(offset, count);
-
-            if (!response.Success)
+            var result = await _regionService.GetRangeAsync(offset, count);
+            if (result.Success)
             {
-                return BadRequest(response.ErrorMessage);
+                if (result.Data == null)
+                {
+                    return NotFound();
+                }
+                return Ok(result.Data);
             }
-
-            return Ok(response.Data);
+            return StatusCode(500, result.ErrorMessage);
         }
 
         [HttpGet]
         [Route("GetAllRegions")]
         public async Task<IActionResult> GetAllRegionsAsync()
         {
-            var response = await _regionService.GetAllAsync();
-
-            if (!response.Success)
+            var result = await _regionService.GetAllAsync();
+            if (result.Success)
             {
-                return BadRequest(response.ErrorMessage);
+                if(result.Data == null)
+                {
+                    return NotFound();
+                }
+                return Ok(result.Data);
             }
-
-            return Ok(response.Data);
+            return StatusCode(500, result.ErrorMessage);
         }
     }
 }

@@ -40,7 +40,7 @@ namespace LightOn.Repositories
             if (town == null)
             {
                 _logger.LogError($"Error deleting town from database with ID {id}", null);
-                return false;
+                throw new NotFoundException($"Town with id {id} not found.");
             }
             _context.Towns.Remove(town);
             await _context.SaveChangesAsync();
@@ -52,7 +52,17 @@ namespace LightOn.Repositories
         {
             try
             {
-                return await _context.Towns.FindAsync(id);
+                var result = await _context.Towns.FindAsync(id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Town with id {id} not found.");
+                }
+                return result;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while finding town with ID {id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {
@@ -65,9 +75,19 @@ namespace LightOn.Repositories
         {
             try
             {
+                var result = await _context.Towns.FindAsync(town.Id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Town with id {town.Id} not found.");
+                }
                 _context.Entry(town).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
                 return true;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while updating town with ID {town.Id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {

@@ -40,7 +40,7 @@ namespace LightOn.Repositories
             if (street == null)
             {
                 _logger.LogError($"Error deleting street from database with ID {id}", null);
-                return false;
+                throw new NotFoundException($"Street with id {id} not found.");
             }
             _context.Streets.Remove(street);
             await _context.SaveChangesAsync();
@@ -52,7 +52,17 @@ namespace LightOn.Repositories
         {
             try
             {
-                return await _context.Streets.FindAsync(id);
+                var result = await _context.Streets.FindAsync(id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Street with id {id} not found.");
+                }
+                return result;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while finding street with ID {id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {
@@ -65,9 +75,19 @@ namespace LightOn.Repositories
         {
             try
             {
+                var result = await _context.Streets.FindAsync(street.Id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Street with id {street.Id} not found.");
+                }
                 _context.Entry(street).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
                 return true;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while updating street with ID {street.Id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {

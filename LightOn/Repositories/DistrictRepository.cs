@@ -40,7 +40,7 @@ namespace LightOn.Repositories
             if (district == null)
             {
                 _logger.LogError($"Error deleting district from database with ID {id}", null);
-                return false;
+                throw new NotFoundException($"District with id {id} not found.");
             }
             _context.Districts.Remove(district);
             await _context.SaveChangesAsync();
@@ -52,7 +52,17 @@ namespace LightOn.Repositories
         {
             try
             {
-                return await _context.Districts.FindAsync(id);
+                var result = await _context.Districts.FindAsync(id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"District with id {id} not found.");
+                }
+                return result;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while finding district with ID {id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {
@@ -65,9 +75,19 @@ namespace LightOn.Repositories
         {
             try
             {
+                var result = await _context.Districts.FindAsync(district.Id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"District with id {district.Id} not found.");
+                }
                 _context.Entry(district).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
                 return true;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while updating district with ID {district.Id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {

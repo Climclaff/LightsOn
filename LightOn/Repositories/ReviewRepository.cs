@@ -40,7 +40,7 @@ namespace LightOn.Repositories
             if (review == null)
             {
                 _logger.LogError($"Error deleting review from database with ID {id}", null);
-                return false;
+                throw new NotFoundException($"Review with id {id} not found.");
             }
             _context.Reviews.Remove(review);
             await _context.SaveChangesAsync();
@@ -52,7 +52,17 @@ namespace LightOn.Repositories
         {
             try
             {
-                return await _context.Reviews.FindAsync(id);
+                var result = await _context.Reviews.FindAsync(id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Review with id {id} not found.");
+                }
+                return result;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while finding review with ID {id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {
@@ -65,9 +75,19 @@ namespace LightOn.Repositories
         {
             try
             {
+                var result = await _context.Reviews.FindAsync(review.Id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Review with id {review.Id} not found.");
+                }
                 _context.Entry(review).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
                 return true;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while updating review with ID {review.Id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {

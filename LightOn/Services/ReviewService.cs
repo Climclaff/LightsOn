@@ -42,6 +42,10 @@ namespace LightOn.Services
                 }
                 return new ServiceResponse<Review> { Success = true };
             }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Review> { Success = false, NotFound = true, ErrorMessage = ex.Message };
+            }
             catch (Exception ex)
             {
                 return new ServiceResponse<Review> { Success = false, ErrorMessage = ex.Message };
@@ -57,9 +61,13 @@ namespace LightOn.Services
                 var review = await _repository.GetByIdAsync(id);
                 if (review == null)
                 {
-                    return new ServiceResponse<Review> { Success = false, ErrorMessage = $"Review with ID {id} was not found" };
+                    return new ServiceResponse<Review> { Success = false, ErrorMessage = $"Review with ID {id} was not found", NotFound = true };
                 }
                 return new ServiceResponse<Review> { Success = true, Data = review };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Review> { Success = false, ErrorMessage = ex.Message, NotFound = true };
             }
             catch (Exception ex)
             {
@@ -73,6 +81,10 @@ namespace LightOn.Services
             {
                 await _repository.UpdateAsync(review);
                 return new ServiceResponse<Review> { Success = true };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Review> { Success = false, NotFound = true, ErrorMessage = ex.Message };
             }
             catch (Exception ex)
             {

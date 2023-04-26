@@ -42,6 +42,10 @@ namespace LightOn.Services
                 }
                 return new ServiceResponse<Region> { Success = true };
             }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Region> { Success = false, NotFound = true, ErrorMessage = ex.Message};
+            }
             catch (Exception ex)
             {
                 return new ServiceResponse<Region> { Success = false, ErrorMessage = ex.Message };
@@ -57,9 +61,13 @@ namespace LightOn.Services
                 var region = await _repository.GetByIdAsync(id);
                 if (region == null)
                 {
-                    return new ServiceResponse<Region> { Success = false, ErrorMessage = $"Region with ID {id} was not found" };
+                    return new ServiceResponse<Region> { Success = false, ErrorMessage = $"Region with ID {id} was not found", NotFound = true };
                 }
                 return new ServiceResponse<Region> { Success = true, Data = region };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Region> { Success = false, ErrorMessage = ex.Message, NotFound = true };
             }
             catch (Exception ex)
             {
@@ -73,6 +81,10 @@ namespace LightOn.Services
             {
                 await _repository.UpdateAsync(region);
                 return new ServiceResponse<Region> { Success = true };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Region> { Success = false, NotFound = true, ErrorMessage = ex.Message };
             }
             catch (Exception ex)
             {

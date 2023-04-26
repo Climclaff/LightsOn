@@ -42,6 +42,10 @@ namespace LightOn.Services
                 }
                 return new ServiceResponse<Appliance> { Success = true };
             }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Appliance> { Success = false, NotFound = true, ErrorMessage = ex.Message };
+            }
             catch (Exception ex)
             {
                 return new ServiceResponse<Appliance> { Success = false, ErrorMessage = ex.Message };
@@ -49,7 +53,18 @@ namespace LightOn.Services
 
         }
 
-
+        public async Task<ServiceResponse<List<Appliance>>> GetUserAppliancesAsync(int id)
+        {
+            try
+            {
+                var result = await _repository.GetUserAppliancesAsync(id);
+                return new ServiceResponse<List<Appliance>> { Success = true, Data = result };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<List<Appliance>> { Success = false, ErrorMessage = ex.Message };
+            }
+        }
         public async Task<ServiceResponse<Appliance>> GetByIdAsync(int id)
         {
             try
@@ -57,9 +72,13 @@ namespace LightOn.Services
                 var appliance = await _repository.GetByIdAsync(id);
                 if (appliance == null)
                 {
-                    return new ServiceResponse<Appliance> { Success = false, ErrorMessage = $"Appliance with ID {id} was not found" };
+                    return new ServiceResponse<Appliance> { Success = false, ErrorMessage = $"Appliance with ID {id} was not found", NotFound = true };
                 }
                 return new ServiceResponse<Appliance> { Success = true, Data = appliance };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Appliance> { Success = false, ErrorMessage = ex.Message, NotFound = true};
             }
             catch (Exception ex)
             {
@@ -73,6 +92,10 @@ namespace LightOn.Services
             {
                 await _repository.UpdateAsync(appliance);
                 return new ServiceResponse<Appliance> { Success = true };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Appliance> { Success = false, NotFound = true, ErrorMessage = ex.Message };
             }
             catch (Exception ex)
             {

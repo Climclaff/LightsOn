@@ -42,6 +42,10 @@ namespace LightOn.Services
                 }
                 return new ServiceResponse<District> { Success = true };
             }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<District> { Success = false, NotFound = true, ErrorMessage = ex.Message };
+            }
             catch (Exception ex)
             {
                 return new ServiceResponse<District> { Success = false, ErrorMessage = ex.Message };
@@ -57,9 +61,13 @@ namespace LightOn.Services
                 var district = await _repository.GetByIdAsync(id);
                 if (district == null)
                 {
-                    return new ServiceResponse<District> { Success = false, ErrorMessage = $"District with ID {id} was not found" };
+                    return new ServiceResponse<District> { Success = false, ErrorMessage = $"District with ID {id} was not found", NotFound = true };
                 }
                 return new ServiceResponse<District> { Success = true, Data = district };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<District> { Success = false, ErrorMessage = ex.Message, NotFound = true };
             }
             catch (Exception ex)
             {
@@ -73,6 +81,10 @@ namespace LightOn.Services
             {
                 await _repository.UpdateAsync(district);
                 return new ServiceResponse<District> { Success = true };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<District> { Success = false, NotFound = true, ErrorMessage = ex.Message };
             }
             catch (Exception ex)
             {

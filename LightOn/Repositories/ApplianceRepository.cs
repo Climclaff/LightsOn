@@ -40,19 +40,40 @@ namespace LightOn.Repositories
             if (appliance == null)
             {
                 _logger.LogError($"Error deleting appliance from database with ID {id}", null);
-                return false;
+                throw new NotFoundException($"Appliance with id {id} not found.");
             }
             _context.Appliances.Remove(appliance);
             await _context.SaveChangesAsync();
             return true;
         }
 
-
+        public async Task<List<Appliance>> GetUserAppliancesAsync(int id)
+        {
+            try
+            {
+                return await _context.Appliances.Where(a => a.UserId == id).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error finding appliances in database.", ex);
+                throw new RepositoryException("Error finding user's appliances", ex);
+            }
+        }
         public async Task<Appliance> GetByIdAsync(int id)
         {
             try
             {
-                return await _context.Appliances.FindAsync(id);
+                var result = await _context.Appliances.FindAsync(id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Appliance with id {id} not found.");
+                }
+                return result;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while finding appliance with ID {id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {
@@ -65,9 +86,19 @@ namespace LightOn.Repositories
         {
             try
             {
+                var result = await _context.Appliances.FindAsync(appliance.Id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Appliance with id {appliance.Id} not found.");
+                }
                 _context.Entry(appliance).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
                 return true;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while updating appliance with ID {appliance.Id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {

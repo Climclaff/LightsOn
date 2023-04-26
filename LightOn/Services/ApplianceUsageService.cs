@@ -42,6 +42,10 @@ namespace LightOn.Services
                 }
                 return new ServiceResponse<ApplianceUsageHistory> { Success = true };
             }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<ApplianceUsageHistory> { Success = false, NotFound = true, ErrorMessage = ex.Message };
+            }
             catch (Exception ex)
             {
                 return new ServiceResponse<ApplianceUsageHistory> { Success = false, ErrorMessage = ex.Message };
@@ -57,9 +61,13 @@ namespace LightOn.Services
                 var usageHistory = await _repository.GetByIdAsync(id);
                 if (usageHistory == null)
                 {
-                    return new ServiceResponse<ApplianceUsageHistory> { Success = false, ErrorMessage = $"Usage history with ID {id} was not found" };
+                    return new ServiceResponse<ApplianceUsageHistory> { Success = false, ErrorMessage = $"Usage history with ID {id} was not found", NotFound = true };
                 }
                 return new ServiceResponse<ApplianceUsageHistory> { Success = true, Data = usageHistory };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<ApplianceUsageHistory> { Success = false, ErrorMessage = ex.Message, NotFound = true };
             }
             catch (Exception ex)
             {
@@ -73,6 +81,10 @@ namespace LightOn.Services
             {
                 await _repository.UpdateAsync(usageHistory);
                 return new ServiceResponse<ApplianceUsageHistory> { Success = true };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<ApplianceUsageHistory> { Success = false, NotFound = true, ErrorMessage = ex.Message };
             }
             catch (Exception ex)
             {

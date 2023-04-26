@@ -42,6 +42,10 @@ namespace LightOn.Services
                 }
                 return new ServiceResponse<Street> { Success = true };
             }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Street> { Success = false, NotFound = true, ErrorMessage = ex.Message };
+            }
             catch (Exception ex)
             {
                 return new ServiceResponse<Street> { Success = false, ErrorMessage = ex.Message };
@@ -57,9 +61,13 @@ namespace LightOn.Services
                 var street = await _repository.GetByIdAsync(id);
                 if (street == null)
                 {
-                    return new ServiceResponse<Street> { Success = false, ErrorMessage = $"Street with ID {id} was not found" };
+                    return new ServiceResponse<Street> { Success = false, ErrorMessage = $"Street with ID {id} was not found", NotFound = true };
                 }
                 return new ServiceResponse<Street> { Success = true, Data = street };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Street> { Success = false, ErrorMessage = ex.Message, NotFound = true };
             }
             catch (Exception ex)
             {
@@ -73,6 +81,10 @@ namespace LightOn.Services
             {
                 await _repository.UpdateAsync(street);
                 return new ServiceResponse<Street> { Success = true };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Street> { Success = false, NotFound = true, ErrorMessage = ex.Message };
             }
             catch (Exception ex)
             {

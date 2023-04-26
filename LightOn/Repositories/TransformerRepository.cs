@@ -40,7 +40,7 @@ namespace LightOn.Repositories
             if (transformer == null)
             {
                 _logger.LogError($"Error deleting transformer from database with ID {id}", null);
-                return false;
+                throw new NotFoundException($"Transformer with id {id} not found.");
             }
             _context.Transformers.Remove(transformer);
             await _context.SaveChangesAsync();
@@ -52,7 +52,17 @@ namespace LightOn.Repositories
         {
             try
             {
-                return await _context.Transformers.FindAsync(id);
+                var result = await _context.Transformers.FindAsync(id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Transformer with id {id} not found.");
+                }
+                return result;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while finding transformer with ID {id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {
@@ -65,9 +75,19 @@ namespace LightOn.Repositories
         {
             try
             {
+                var result = await _context.Transformers.FindAsync(transformer.Id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Transformer with id {transformer.Id} not found.");
+                }
                 _context.Entry(transformer).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
                 return true;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while updating transformer with ID {transformer.Id}", ex);
+                throw new NotFoundException(ex.Message);
             }
             catch (Exception ex)
             {
