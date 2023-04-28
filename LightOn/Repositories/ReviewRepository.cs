@@ -75,7 +75,7 @@ namespace LightOn.Repositories
         {
             try
             {
-                var result = await _context.Reviews.FindAsync(review.Id);
+                var result = await _context.Reviews.AsNoTracking().FirstOrDefaultAsync(current => current.Id == review.Id);
                 if (result == null)
                 {
                     throw new NotFoundException($"Review with id {review.Id} not found.");

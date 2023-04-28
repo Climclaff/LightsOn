@@ -37,8 +37,28 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = options.DefaultPolicy;
 });
 
+
+builder.Services.AddScoped<IApplianceRepository, ApplianceRepository>();
+builder.Services.AddScoped<IApplianceUsageRepository, ApplianceUsageRepository>();
+builder.Services.AddScoped<IBuildingRepository, BuildingRepository>();
+builder.Services.AddScoped<IDistrictRepository, DistrictRepository>();
 builder.Services.AddScoped<IRegionRepository, RegionRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IStreetRepository, StreetRepository>();
+builder.Services.AddScoped<ITownRepository, TownRepository>();
+builder.Services.AddScoped<ITransformerMeasurementRepository, TransformerMeasurementRepository>();
+builder.Services.AddScoped<ITransformerRepository, TransformerRepository>();
+
+builder.Services.AddScoped<IApplianceService, ApplianceService>();
+builder.Services.AddScoped<IApplianceUsageService, ApplianceUsageService>();
+builder.Services.AddScoped<IBuildingService, BuildingService>();
+builder.Services.AddScoped<IDistrictService, DistrictService>();
 builder.Services.AddScoped<IRegionService, RegionService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IStreetService, StreetService>();
+builder.Services.AddScoped<ITownService, TownService>();
+builder.Services.AddScoped<ITransformerMeasurementService, TransformerMeasurementService>();
+builder.Services.AddScoped<ITransformerService, TransformerService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

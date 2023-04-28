@@ -75,7 +75,7 @@ namespace LightOn.Repositories
         {
             try
             {
-                var result = await _context.ApplianceUsageHistories.FindAsync(usageHistory.Id);
+                var result = await _context.ApplianceUsageHistories.AsNoTracking().FirstOrDefaultAsync(current => current.Id == usageHistory.Id);
                 if (result == null)
                 {
                     throw new NotFoundException($"Usage history with id {usageHistory.Id} not found.");

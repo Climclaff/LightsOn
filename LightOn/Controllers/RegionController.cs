@@ -15,18 +15,18 @@ namespace LightOn.Controllers
     [ApiController]
     public class RegionController : ControllerBase
     {
-        private readonly IRegionService _regionService;
+        private readonly IRegionService _service;
 
         public RegionController(IRegionService regionService)
         {
-            _regionService = regionService;
+            _service = regionService;
         }
 
         [HttpPost]
-        [Route("DeleteRegion")]
-        public async Task<IActionResult> DeleteRegion([FromQuery] int id)
+        [Route("Delete")]
+        public async Task<IActionResult> Delete([FromQuery] int id)
         {
-            ServiceResponse<Region> result = await _regionService.DeleteAsync(id);
+            ServiceResponse<Region> result = await _service.DeleteAsync(id);
             if (result.NotFound)
             {
                 return NotFound();
@@ -38,10 +38,10 @@ namespace LightOn.Controllers
             return StatusCode(500, result.ErrorMessage);
         }
         [HttpPost]
-        [Route("CreateRegion")]
-        public async Task<IActionResult> CreateRegion([FromBody] Region region)
+        [Route("Create")]
+        public async Task<IActionResult> Create([FromBody] Region region)
         {
-            ServiceResponse<Region> result = await _regionService.CreateAsync(region);
+            ServiceResponse<Region> result = await _service.CreateAsync(region);
             if (result.Success)
             {
                 return Ok();
@@ -49,10 +49,10 @@ namespace LightOn.Controllers
             return BadRequest(result.ErrorMessage);
         }
         [HttpPost]
-        [Route("UpdateRegion")]
-        public async Task<IActionResult> UpdateRegion([FromBody] Region region)
+        [Route("Update")]
+        public async Task<IActionResult> Update([FromBody] Region region)
         {
-            ServiceResponse<Region> result = await _regionService.UpdateAsync(region);
+            ServiceResponse<Region> result = await _service.UpdateAsync(region);
             if (result.NotFound)
             {
                 return NotFound();
@@ -65,10 +65,10 @@ namespace LightOn.Controllers
 
         }
         [HttpGet]
-        [Route("FindRegionById")]
-        public async Task<IActionResult> FindRegionById([FromQuery] int id)
+        [Route("FindById")]
+        public async Task<IActionResult> FindById([FromQuery] int id)
         {
-            var result = await _regionService.GetByIdAsync(id);
+            var result = await _service.GetByIdAsync(id);
 
             if (result.NotFound)
             {
@@ -85,7 +85,7 @@ namespace LightOn.Controllers
         [Route("GetRange")]
         public async Task<IActionResult> GetRangeAsync([FromQuery] int offset, int count)
         {
-            var result = await _regionService.GetRangeAsync(offset, count);
+            var result = await _service.GetRangeAsync(offset, count);
             if (result.Success)
             {
                 if (result.Data == null)
@@ -98,10 +98,10 @@ namespace LightOn.Controllers
         }
 
         [HttpGet]
-        [Route("GetAllRegions")]
-        public async Task<IActionResult> GetAllRegionsAsync()
+        [Route("GetAll")]
+        public async Task<IActionResult> GetAllAsync()
         {
-            var result = await _regionService.GetAllAsync();
+            var result = await _service.GetAllAsync();
             if (result.Success)
             {
                 if(result.Data == null)

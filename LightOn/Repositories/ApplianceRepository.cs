@@ -86,7 +86,7 @@ namespace LightOn.Repositories
         {
             try
             {
-                var result = await _context.Appliances.FindAsync(appliance.Id);
+                var result = await _context.Appliances.AsNoTracking().FirstOrDefaultAsync(current => current.Id == appliance.Id);
                 if (result == null)
                 {
                     throw new NotFoundException($"Appliance with id {appliance.Id} not found.");

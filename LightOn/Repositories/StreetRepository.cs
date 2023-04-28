@@ -75,7 +75,7 @@ namespace LightOn.Repositories
         {
             try
             {
-                var result = await _context.Streets.FindAsync(street.Id);
+                var result = await _context.Streets.AsNoTracking().FirstOrDefaultAsync(current => current.Id == street.Id);
                 if (result == null)
                 {
                     throw new NotFoundException($"Street with id {street.Id} not found.");

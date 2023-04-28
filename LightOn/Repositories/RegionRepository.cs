@@ -75,7 +75,7 @@ namespace LightOn.Repositories
         {
             try
             {
-                var result = await _context.Regions.FindAsync(region.Id);
+                var result = await _context.Regions.AsNoTracking().FirstOrDefaultAsync(current => current.Id == region.Id);
                 if (result == null)
                 {
                     throw new NotFoundException($"Region with id {region.Id} not found.");

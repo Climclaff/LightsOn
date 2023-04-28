@@ -75,7 +75,7 @@ namespace LightOn.Repositories
         {
             try
             {
-                var result = await _context.Towns.FindAsync(town.Id);
+                var result = await _context.Towns.AsNoTracking().FirstOrDefaultAsync(current => current.Id == town.Id);
                 if (result == null)
                 {
                     throw new NotFoundException($"Town with id {town.Id} not found.");

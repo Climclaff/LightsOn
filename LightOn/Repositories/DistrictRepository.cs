@@ -75,7 +75,7 @@ namespace LightOn.Repositories
         {
             try
             {
-                var result = await _context.Districts.FindAsync(district.Id);
+                var result = await _context.Districts.AsNoTracking().FirstOrDefaultAsync(current => current.Id == district.Id);
                 if (result == null)
                 {
                     throw new NotFoundException($"District with id {district.Id} not found.");

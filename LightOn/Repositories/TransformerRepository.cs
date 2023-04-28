@@ -75,7 +75,7 @@ namespace LightOn.Repositories
         {
             try
             {
-                var result = await _context.Transformers.FindAsync(transformer.Id);
+                var result = await _context.Transformers.AsNoTracking().FirstOrDefaultAsync(current => current.Id == transformer.Id);
                 if (result == null)
                 {
                     throw new NotFoundException($"Transformer with id {transformer.Id} not found.");

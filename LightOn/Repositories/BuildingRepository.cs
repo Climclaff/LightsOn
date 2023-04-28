@@ -75,7 +75,7 @@ namespace LightOn.Repositories
         {
             try
             {
-                var result = await _context.Buildings.FindAsync(building.Id);
+                var result = await _context.Buildings.AsNoTracking().FirstOrDefaultAsync(current => current.Id == building.Id);
                 if (result == null)
                 {
                     throw new NotFoundException($"Building with id {building.Id} not found.");
