@@ -1,0 +1,139 @@
+﻿using LightOn.Models;
+using LightOn.Models.Auth;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Xml.Serialization;
+
+namespace LightOn.Controllers.Auth
+{
+    
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AuthController : ControllerBase
+    {
+        private readonly UserManager<User> _userManager;
+        private readonly IConfiguration _configuration;
+
+        public AuthController(UserManager<User> userManager, IConfiguration configuration)
+        {
+            _userManager = userManager;
+            _configuration = configuration;
+        }
+
+        [HttpPost]
+        [Route("Register")]
+        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        {
+            var userExists = await _userManager.FindByNameAsync(model.Email);
+            if (userExists != null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                { Status = "Error", Message = "User already exists" });
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(
+                new ValidationProblemDetails(ModelState));
+            }
+            User user = new User()
+            {
+                Email = model.Email,
+                UserName = model.Email,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                Password = model.Password
+            };
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
+            {
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, new
+                { Status = "Something went wrong", Message = "Make sure the password contains numbers, upper and lower case letters, special symbols" });
+            }
+
+            return Ok(new { Status = "Success", Message = "User created" });
+        }
+
+        [HttpPost]
+        [Route("Login")]
+        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        {
+            var user = await _userManager.FindByNameAsync(model.Email);
+            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password) != false)
+            {
+                var authClaims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                };
+                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["JWT:ValidIssuer"],
+                    audience: _configuration["JWT:ValidAudience"],
+                    expires: DateTime.Now.AddHours(3),
+                    claims: authClaims,
+                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
+                return Ok(new
+                {
+                    token = new JwtSecurityTokenHandler().WriteToken(token),
+                    user = user.Id
+                }
+                    );
+            }
+            return Unauthorized();
+        }
+/*
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost]
+        [Route("AutoLogin")]
+        public async Task<IActionResult> AutoLogin()
+        {
+            var name = User.FindFirst(ClaimTypes.Name)?.Value;
+            var curUser = await _userManager.FindByNameAsync(name);
+            if (curUser != null)
+            {
+                var userRoles = await _userManager.GetRolesAsync(curUser);
+                var authClaims = new List<Claim>
+                 {
+                     new Claim(ClaimTypes.Name, curUser.UserName),
+                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                 };
+                foreach (var userRole in userRoles)
+                {
+                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                }
+
+                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["JWT:ValidIssuer"],
+                    audience: _configuration["JWT:ValidAudience"],
+                    expires: DateTime.Now.AddHours(3),
+                     claims: authClaims,
+                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
+                return Ok(new
+                {
+                    token = new JwtSecurityTokenHandler().WriteToken(token),
+                    user = curUser.UserName
+                });
+            }
+            return Unauthorized();
+        }
+*/
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost]
+        [Route("Test")]
+        public async Task<IActionResult> Test()
+        {
+            return Ok();
+        }
+    }
+}

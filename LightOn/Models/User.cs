@@ -7,6 +7,9 @@ namespace LightOn.Models
     {
         public string? Password { get; set; }
 
+        public string? FirstName { get; set; }
+
+        public string? LastName { get; set; }
         public int? RegionId { get; set; }
 
         [JsonIgnore]

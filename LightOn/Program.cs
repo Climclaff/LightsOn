@@ -4,9 +4,12 @@ using LightOn.Repositories;
 using LightOn.Repositories.Interfaces;
 using LightOn.Services;
 using LightOn.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,14 +31,28 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddIdentity<User, Role>()
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
-   .AddNegotiate();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+     .AddJwtBearer(options =>
+     {
+         options.SaveToken = true;
+         options.RequireHttpsMetadata = false;
+         options.TokenValidationParameters = new TokenValidationParameters()
+         {
+             ValidateIssuer = true,
+             ValidateAudience = true,
+             ValidAudience = builder.Configuration["JWT:ValidAudience"],
+             ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+             ClockSkew = TimeSpan.FromMinutes(10),
+             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JWT:Secret").Value))
+         };
+     }); ;
 
+/*
 builder.Services.AddAuthorization(options =>
 {
     // By default, all incoming requests will be authorized according to the default policy.
     options.FallbackPolicy = options.DefaultPolicy;
-});
+});*/
 
 
 builder.Services.AddScoped<IApplianceRepository, ApplianceRepository>();
@@ -68,10 +85,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseHttpsRedirection();
-/*
+
 app.UseAuthentication();
 app.UseAuthorization();
-*/
+
 app.MapControllers();
 
 app.Run();
