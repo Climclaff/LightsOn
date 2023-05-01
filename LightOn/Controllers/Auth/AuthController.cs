@@ -59,7 +59,7 @@ namespace LightOn.Controllers.Auth
                 return StatusCode(StatusCodes.Status422UnprocessableEntity, new
                 { Status = "Something went wrong", Message = "Make sure the password contains numbers, upper and lower case letters, special symbols" });
             }
-
+            await _userManager.AddClaimAsync(user, new Claim("IsAdmin", "false"));
             return Ok(new { Status = "Success", Message = "User created" });
         }
 
