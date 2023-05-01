@@ -35,8 +35,6 @@ namespace LightOn.Models
         [JsonIgnore]
         public Building? Building { get; set; }
 
-        public bool? IsAdmin { get; set; }
-
         [JsonIgnore]
         public ICollection<Appliance>? Appliances { get; set; }
         [JsonIgnore]
