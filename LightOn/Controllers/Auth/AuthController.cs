@@ -51,7 +51,6 @@ namespace LightOn.Controllers.Auth
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                Password = model.Password
             };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)

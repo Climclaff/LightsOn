@@ -5,8 +5,6 @@ namespace LightOn.Models
 {
     public class User : IdentityUser<int>
     {
-        public string? Password { get; set; }
-
         public string? FirstName { get; set; }
 
         public string? LastName { get; set; }
