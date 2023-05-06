@@ -28,5 +28,25 @@ namespace LightOn.Models.Auth
         [Display(Name = "LastName")]
         public string? LastName { get; set; }
 
+        [Required(ErrorMessage = "{0} is required")]
+        [Display(Name = "Region")]
+        public int? RegionId { get; set; }
+
+        [Required(ErrorMessage = "{0} is required")]
+        [Display(Name = "District")]
+        public int? DistrictId { get; set; }
+
+        [Required(ErrorMessage = "{0} is required")]
+        [Display(Name = "Town")]
+        public int? TownId { get; set; }
+
+        [Required(ErrorMessage = "{0} is required")]
+        [Display(Name = "Street")]
+        public int? StreetId { get; set; }
+
+        [Required(ErrorMessage = "{0} is required")]
+        [Display(Name = "Building")]
+        public int? BuildingId { get; set; }
+
     }
 }

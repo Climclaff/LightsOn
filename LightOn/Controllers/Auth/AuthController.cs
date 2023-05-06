@@ -69,11 +69,17 @@ namespace LightOn.Controllers.Auth
             var user = await _userManager.FindByNameAsync(model.Email);
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password) != false)
             {
+                var databaseClaims = await _userManager.GetClaimsAsync(user);
                 var authClaims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    
                 };
+                for(int i= 0; i<databaseClaims.Count; i++)
+                {
+                    authClaims.Add(databaseClaims[i]);
+                }
                 var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
                 var token = new JwtSecurityToken(
                     issuer: _configuration["JWT:ValidIssuer"],
@@ -90,44 +96,44 @@ namespace LightOn.Controllers.Auth
             }
             return Unauthorized();
         }
-/*
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost]
-        [Route("AutoLogin")]
-        public async Task<IActionResult> AutoLogin()
-        {
-            var name = User.FindFirst(ClaimTypes.Name)?.Value;
-            var curUser = await _userManager.FindByNameAsync(name);
-            if (curUser != null)
-            {
-                var userRoles = await _userManager.GetRolesAsync(curUser);
-                var authClaims = new List<Claim>
-                 {
-                     new Claim(ClaimTypes.Name, curUser.UserName),
-                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                 };
-                foreach (var userRole in userRoles)
+        /*
+                [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+                [HttpPost]
+                [Route("AutoLogin")]
+                public async Task<IActionResult> AutoLogin()
                 {
-                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-                }
+                    var name = User.FindFirst(ClaimTypes.Name)?.Value;
+                    var curUser = await _userManager.FindByNameAsync(name);
+                    if (curUser != null)
+                    {
+                        var userRoles = await _userManager.GetRolesAsync(curUser);
+                        var authClaims = new List<Claim>
+                         {
+                             new Claim(ClaimTypes.Name, curUser.UserName),
+                             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                         };
+                        foreach (var userRole in userRoles)
+                        {
+                            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                        }
 
-                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-                var token = new JwtSecurityToken(
-                    issuer: _configuration["JWT:ValidIssuer"],
-                    audience: _configuration["JWT:ValidAudience"],
-                    expires: DateTime.Now.AddHours(3),
-                     claims: authClaims,
-                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
-                return Ok(new
-                {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),
-                    user = curUser.UserName
-                });
-            }
-            return Unauthorized();
-        }
-*/
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+                        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                        var token = new JwtSecurityToken(
+                            issuer: _configuration["JWT:ValidIssuer"],
+                            audience: _configuration["JWT:ValidAudience"],
+                            expires: DateTime.Now.AddHours(3),
+                             claims: authClaims,
+                            signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
+                        return Ok(new
+                        {
+                            token = new JwtSecurityTokenHandler().WriteToken(token),
+                            user = curUser.UserName
+                        });
+                    }
+                    return Unauthorized();
+                }
+        */
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpPost]
         [Route("Test")]
         public async Task<IActionResult> Test()

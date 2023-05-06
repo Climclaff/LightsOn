@@ -31,7 +31,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddIdentity<User, Role>()
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)    
      .AddJwtBearer(options =>
      {
          options.SaveToken = true;
@@ -45,14 +45,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
              ClockSkew = TimeSpan.FromMinutes(10),
              IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JWT:Secret").Value))
          };
-     }); ;
+     })
+     .AddGoogle(googleOptions =>
+     {
+         googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+         googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+     });
 
-/*
+
 builder.Services.AddAuthorization(options =>
 {
-    // By default, all incoming requests will be authorized according to the default policy.
-    options.FallbackPolicy = options.DefaultPolicy;
-});*/
+    options.AddPolicy("IsAdminPolicy",
+        policy => policy.RequireAssertion(context => context.User.HasClaim(c => (c.Type == "IsAdmin" && c.Value == "true"))));
+});
 
 
 builder.Services.AddScoped<IApplianceRepository, ApplianceRepository>();
