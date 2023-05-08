@@ -81,5 +81,25 @@ namespace LightOn.Repositories
                 throw new RepositoryException("Failed to get all users", ex);
             }
         }
+
+        public async Task<bool> ChangeImageAsync(int userId, byte[] imgData)
+        {
+            try
+            {
+                var user = await GetByIdAsync(userId);
+                if (user == null)
+                {
+                    throw new NotFoundException($"User with id {userId} not found.");
+                }
+                user.ImageData = imgData;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to upload user image", ex);
+                throw new RepositoryException("Failed to upload user image", ex);
+            }
+        }
     }
 }

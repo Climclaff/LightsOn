@@ -81,5 +81,23 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
+
+        [HttpPost]
+        [Route("ChangeImage")]
+        public async Task<IActionResult> Update([FromQuery] int userId, byte[] imgData)
+        {
+            ServiceResponse<User> result = await _service.ChangeImageAsync(userId, imgData);
+            if (result.NotFound)
+            {
+                return NotFound();
+            }
+            if (result.Success)
+            {
+                return Ok();
+            }
+            return StatusCode(500, result.ErrorMessage);
+
+        }
+
     }
 }

@@ -8,5 +8,6 @@ namespace LightOn.Repositories.Interfaces
         Task<List<User>> GetAllAsync();
         Task<List<User>> GetRangeAsync(int offset, int count);
         Task<bool> DeleteAsync(int id);
+        Task<bool> ChangeImageAsync(int userId, byte[] imgData);
     }
 }

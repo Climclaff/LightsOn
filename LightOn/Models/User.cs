@@ -8,6 +8,9 @@ namespace LightOn.Models
         public string? FirstName { get; set; }
 
         public string? LastName { get; set; }
+
+        public byte[]? ImageData { get; set; }
+
         public int? RegionId { get; set; }
 
         [JsonIgnore]

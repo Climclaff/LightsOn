@@ -88,5 +88,21 @@ namespace LightOn.Services
                 return new ServiceResponse<List<User>> { Success = false, ErrorMessage = ex.Message };
             }
         }
+        public async Task<ServiceResponse<User>> ChangeImageAsync(int userId, byte[] imgData)
+        {
+            try
+            {
+                var result = await _repository.ChangeImageAsync(userId, imgData);
+                return new ServiceResponse<User> { Success = true };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<User> { Success = false, ErrorMessage = ex.Message, NotFound = true };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<User> { Success = false, ErrorMessage = ex.Message };
+            }
+        }
     }
 }
