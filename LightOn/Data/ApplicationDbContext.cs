@@ -32,6 +32,7 @@ namespace LightOn.Data
 
         public DbSet<ApplianceUsageHistory>? ApplianceUsageHistories { get; set; }
 
+        public DbSet<ApplianceUsagePlanned>? ApplianceUsagePlanneds { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var configuration = new ConfigurationBuilder()
@@ -42,9 +43,9 @@ namespace LightOn.Data
             var connectionString = configuration.GetConnectionString("LightsOnDb");
             optionsBuilder.UseSqlServer(connectionString);
         }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-        }
+            protected override void OnModelCreating(ModelBuilder modelBuilder)
+            {
+                base.OnModelCreating(modelBuilder);
+            }
     }
 }
