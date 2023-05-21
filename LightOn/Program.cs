@@ -62,6 +62,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddScoped<IApplianceRepository, ApplianceRepository>();
 builder.Services.AddScoped<IApplianceUsageRepository, ApplianceUsageRepository>();
+builder.Services.AddScoped<IApplianceUsagePlannedRepository, ApplianceUsagePlannedRepository>();
 builder.Services.AddScoped<IBuildingRepository, BuildingRepository>();
 builder.Services.AddScoped<IDistrictRepository, DistrictRepository>();
 builder.Services.AddScoped<IRegionRepository, RegionRepository>();
@@ -74,6 +75,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddScoped<IApplianceService, ApplianceService>();
 builder.Services.AddScoped<IApplianceUsageService, ApplianceUsageService>();
+builder.Services.AddScoped<IApplianceUsagePlannedService, ApplianceUsagePlannedService>();
 builder.Services.AddScoped<IBuildingService, BuildingService>();
 builder.Services.AddScoped<IDistrictService, DistrictService>();
 builder.Services.AddScoped<IRegionService, RegionService>();

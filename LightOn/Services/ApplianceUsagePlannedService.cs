@@ -53,7 +53,19 @@ namespace LightOn.Services
 
         }
 
-
+        public async Task<ServiceResponse<List<ApplianceUsagePlanned>>> GetByUserAsync(int id)
+        {
+            try
+            {
+                var usagePlans = await _repository.GetByUserAsync(id);
+                return new ServiceResponse<List<ApplianceUsagePlanned>> { Success = true, Data = usagePlans };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while getting usage plan for user with id {id}", ex);
+                return new ServiceResponse<List<ApplianceUsagePlanned>> { Success = false, ErrorMessage = ex.Message };
+            }
+        }
         public async Task<ServiceResponse<ApplianceUsagePlanned>> GetByIdAsync(int id)
         {
             try
