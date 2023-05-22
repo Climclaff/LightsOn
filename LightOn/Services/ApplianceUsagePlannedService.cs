@@ -57,6 +57,7 @@ namespace LightOn.Services
         {
             try
             {
+
                 var usagePlans = await _repository.GetByUserAsync(id);
                 return new ServiceResponse<List<ApplianceUsagePlanned>> { Success = true, Data = usagePlans };
             }

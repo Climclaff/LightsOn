@@ -107,5 +107,20 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
+        [HttpGet]
+        [Route("GetByUser")]
+        public async Task<IActionResult> GetByUser([FromQuery] int id)
+        {
+            var result = await _service.GetByUserAsync(id);
+            if (result.Success)
+            {
+                if (result.Data == null)
+                {
+                    return NotFound();
+                }
+                return Ok(result.Data);
+            }
+            return StatusCode(500, result.ErrorMessage);
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using LightOn.Data;
 using LightOn.Exceptions;
+using LightOn.Migrations;
 using LightOn.Models;
 using LightOn.Repositories.Interfaces;
 using LightOn.Services.Interfaces;
@@ -54,7 +55,10 @@ namespace LightOn.Repositories
         {
             try
             {
-                var result = await _context.ApplianceUsagePlanneds.Where(usage => usage.Appliance.UserId == id).ToListAsync();
+                 await RemoveUserExpiredPlansAsync(id);
+                 var result = await _context.ApplianceUsagePlanneds
+                    .Where(usage => usage.Appliance.UserId == id)
+                    .ToListAsync();
                 if (result == null)
                 {
                     throw new NotFoundException($"Usage plan for user with id {id} not found.");
@@ -76,6 +80,7 @@ namespace LightOn.Repositories
         {
             try
             {
+                await RemoveExpiredPlanByIdAsync(id);
                 var result = await _context.ApplianceUsagePlanneds.FindAsync(id);
                 if (result == null)
                 {
@@ -122,6 +127,7 @@ namespace LightOn.Repositories
 
         public async Task<List<ApplianceUsagePlanned>> GetRangeAsync(int offset, int count)
         {
+            await RemoveAllExpiredPlansAsync();
             var totalPlans = await _context.ApplianceUsagePlanneds.CountAsync();
 
             if (offset >= totalPlans)
@@ -138,6 +144,7 @@ namespace LightOn.Repositories
         {
             try
             {
+                await RemoveAllExpiredPlansAsync();
                 return await _context.ApplianceUsagePlanneds.ToListAsync();
             }
             catch (Exception ex)
@@ -146,7 +153,83 @@ namespace LightOn.Repositories
                 throw new RepositoryException("Failed to get all usage plans", ex);
             }
         }
+        private async Task RemoveUserExpiredPlansAsync(int id)
+        {
+            var currentTime = DateTime.Now;
 
+            var expiredUsagePlanned = await _context.ApplianceUsagePlanneds
+                .Where(usage => usage.Appliance.UserId == id && usage.UsageEndDate < currentTime)
+                .ToListAsync();
+
+            if (expiredUsagePlanned.Any())
+            {
+                foreach (var plan in expiredUsagePlanned)
+                {
+                    var usageHistory = new ApplianceUsageHistory
+                    {
+                        UsageStartDate = plan.UsageStartDate,
+                        UsageEndDate = plan.UsageEndDate,
+                        ApproximateLoad = plan.ApproximateLoad,
+                        ApplianceId = plan.ApplianceId
+                    };
+
+                    await _context.ApplianceUsageHistories.AddAsync(usageHistory);
+                    _context.ApplianceUsagePlanneds.Remove(plan);
+                }
+                await _context.SaveChangesAsync();
+            }
+        }
+        private async Task RemoveAllExpiredPlansAsync()
+        {
+            var currentTime = DateTime.Now;
+
+            var expiredUsagePlanned = await _context.ApplianceUsagePlanneds
+                .Where(usage => usage.UsageEndDate < currentTime)
+                .ToListAsync();
+
+            if (expiredUsagePlanned.Any())
+            {
+                foreach (var plan in expiredUsagePlanned)
+                {
+                    var usageHistory = new ApplianceUsageHistory
+                    {
+                        UsageStartDate = plan.UsageStartDate,
+                        UsageEndDate = plan.UsageEndDate,
+                        ApproximateLoad = plan.ApproximateLoad,
+                        ApplianceId = plan.ApplianceId
+                    };
+
+                    await _context.ApplianceUsageHistories.AddAsync(usageHistory);
+                    _context.ApplianceUsagePlanneds.Remove(plan);
+                }
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        private async Task RemoveExpiredPlanByIdAsync(int id)
+        {
+            var currentTime = DateTime.Now;
+
+            var expiredUsagePlan = await _context.ApplianceUsagePlanneds
+                .Where(plan => plan.Id == id && plan.UsageEndDate < currentTime)
+                .SingleOrDefaultAsync();
+
+            if (expiredUsagePlan != null)
+            {
+                    var usageHistory = new ApplianceUsageHistory
+                    {
+                        UsageStartDate = expiredUsagePlan.UsageStartDate,
+                        UsageEndDate = expiredUsagePlan.UsageEndDate,
+                        ApproximateLoad = expiredUsagePlan.ApproximateLoad,
+                        ApplianceId = expiredUsagePlan.ApplianceId
+                    };
+
+                    await _context.ApplianceUsageHistories.AddAsync(usageHistory);
+                    _context.ApplianceUsagePlanneds.Remove(expiredUsagePlan);
+                
+                await _context.SaveChangesAsync();
+            }
+        }
 
 
 

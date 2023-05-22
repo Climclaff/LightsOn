@@ -71,6 +71,31 @@ namespace LightOn.Repositories
             }
         }
 
+        public async Task<List<ApplianceUsageHistory>> GetByUserAsync(int id)
+        {
+            try
+            {
+                var result = await _context.ApplianceUsageHistories
+                   .Where(usage => usage.Appliance.UserId == id)
+                   .ToListAsync();
+                if (result == null)
+                {
+                    throw new NotFoundException($"Usage history for user with id {id} not found.");
+                }
+                return result;
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while finding usage plan for user with ID {id}", ex);
+                throw new NotFoundException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while retrieving usage plan for user with ID {id}", ex);
+                throw new RepositoryException($"Error retrieving usage plan for user with ID {id}", ex);
+            }
+        }
+
         public async Task<bool> UpdateAsync(ApplianceUsageHistory usageHistory)
         {
             try

@@ -11,5 +11,6 @@ namespace LightOn.Repositories.Interfaces
         Task<bool> CreateAsync(ApplianceUsagePlanned usageHistory);
         Task<bool> UpdateAsync(ApplianceUsagePlanned usageHistory);
         Task<bool> DeleteAsync(int id);
+
     }
 }
