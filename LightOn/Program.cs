@@ -59,6 +59,12 @@ builder.Services.AddAuthorization(options =>
         policy => policy.RequireAssertion(context => context.User.HasClaim(c => (c.Type == "IsAdmin" && c.Value == "true"))));
 });
 
+builder.Services.AddDistributedSqlServerCache(options =>
+{
+    options.ConnectionString = builder.Configuration.GetConnectionString("DistCache_ConnectionString");
+    options.SchemaName = "dbo";
+    options.TableName = "CachedValues";
+});
 
 builder.Services.AddScoped<IApplianceRepository, ApplianceRepository>();
 builder.Services.AddScoped<IApplianceUsageRepository, ApplianceUsageRepository>();
