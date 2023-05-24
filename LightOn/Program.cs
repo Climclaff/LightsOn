@@ -4,11 +4,13 @@ using LightOn.Repositories;
 using LightOn.Repositories.Interfaces;
 using LightOn.Services;
 using LightOn.Services.Interfaces;
+using LightOn.Websockets;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Net.WebSockets;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -106,4 +108,46 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseWebSockets();
+app.Map("/ws", HandleWebSocketRequest);
+
 app.Run();
+
+void HandleWebSocketRequest(IApplicationBuilder app)
+{
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.PathBase == "/ws")
+        {
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                int transformerId = GetTransformerIdFromContext(context); // Replace with your logic to retrieve the transformer ID
+
+                WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                await WebSocketHandler.HandleWebSocketConnection(webSocket, transformerId);
+            }
+            else
+            {
+                context.Response.StatusCode = 400;
+            }
+        }
+        else
+        {
+            await next();
+        }
+    });
+}
+
+int GetTransformerIdFromContext(HttpContext context)
+{
+    // Implement your logic to extract the transformer ID from the context
+    // You can retrieve it from request headers, query parameters, or any other source
+    // For this example, assume the transformer ID is passed as a query parameter named "id"
+
+    if (int.TryParse(context.Request.Query["id"], out int transformerId))
+    {
+        return transformerId;
+    }
+
+    throw new ArgumentException("Invalid transformer ID");
+}
