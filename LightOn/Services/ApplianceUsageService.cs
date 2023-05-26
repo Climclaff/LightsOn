@@ -4,16 +4,20 @@ using LightOn.Helpers;
 using LightOn.Models;
 using LightOn.Repositories.Interfaces;
 using LightOn.Services.Interfaces;
+using LightOn.BLL;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace LightOn.Services
 {
     public class ApplianceUsageService : IApplianceUsageService
     {
         private readonly IApplianceUsageRepository _repository;
+        private readonly IApplianceRepository _applianceRepository;
         private readonly ILoggingService _logger;
-        public ApplianceUsageService(IApplianceUsageRepository repository, ILoggingService logger)
+        public ApplianceUsageService(IApplianceUsageRepository repository, IApplianceRepository applianceRepository, ILoggingService logger)
         {
+            _applianceRepository = applianceRepository;
             _repository = repository;
             _logger = logger;
         }
@@ -129,5 +133,81 @@ namespace LightOn.Services
                 return new ServiceResponse<List<ApplianceUsageHistory>> { Success = false, ErrorMessage = ex.Message };
             }
         }
+        public async Task<ServiceResponse<(int[], float[])>> HistogramByUserConsumption(int id)
+        {
+            try
+            {
+                var usagePlans = await _repository.GetByUserAsync(id);
+                var result = EnergyConsumptionAnalyzer.GenerateHistogram(usagePlans);
+                return new ServiceResponse<(int[], float[])> { Success = true, Data = result };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while getting histogram for user with id {id}", ex);
+                return new ServiceResponse<(int[], float[])> { Success = false, ErrorMessage = ex.Message };
+            }
+        }
+        public async Task<ServiceResponse<Dictionary<string, object>>> LineChartByUserConsumption(int id)
+        {
+            try
+            {
+                var usagePlans = await _repository.GetByUserAsync(id);
+                var result = EnergyConsumptionAnalyzer.GenerateLineChart(usagePlans);
+                return new ServiceResponse<Dictionary<string, object>> { Success = true, Data = result };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while getting line chart for user with id {id}", ex);
+                return new ServiceResponse<Dictionary<string, object>> { Success = false, ErrorMessage = ex.Message };
+            }
+        }
+        public async Task<ServiceResponse<Dictionary<string, object>>> BarChartByUserConsumption(int id)
+        {
+            try
+            {
+                var usagePlans = await _repository.GetByUserAsync(id);
+                var result = EnergyConsumptionAnalyzer.GenerateBarChart(usagePlans);
+                return new ServiceResponse<Dictionary<string, object>> { Success = true, Data = result };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while getting bar chart for user with id {id}", ex);
+                return new ServiceResponse<Dictionary<string, object>> { Success = false, ErrorMessage = ex.Message };
+            }
+        }
+
+        public async Task<ServiceResponse<object>> ScatterChartByUserConsumption(int id)
+        {
+            try
+            {
+                var usagePlans = await _repository.GetByUserAsync(id);
+                var result = EnergyConsumptionAnalyzer.GenerateScatterChart(usagePlans);
+                return new ServiceResponse<object> { Success = true, Data = result };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while getting scatter chart for user with id {id}", ex);
+                return new ServiceResponse<object> { Success = false, ErrorMessage = ex.Message };
+            }
+        }
+        public async Task<ServiceResponse<object>> PieChartByUserConsumption(int id)
+        {
+            try
+            {
+                var usagePlans = await _repository.GetByUserAsync(id);
+                List<Appliance> applianceList = await _applianceRepository.GetUserAppliancesAsync(id);
+                var applianceIds = usagePlans.Select(u => u.ApplianceId).Distinct().ToList();
+                applianceList = applianceList.Where(a => applianceIds.Contains(a.Id)).ToList();
+                var result = EnergyConsumptionAnalyzer.GeneratePieChart(usagePlans, applianceList);
+                return new ServiceResponse<object> { Success = true, Data = result };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while getting scatter chart for user with id {id}", ex);
+                return new ServiceResponse<object> { Success = false, ErrorMessage = ex.Message };
+            }
+        }
+
+
     }
 }

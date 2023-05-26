@@ -12,6 +12,8 @@ namespace LightOn.Models
 
         public float ApproximateLoad { get; set; }
 
+        public float EnergyConsumed { get; set; }
+
         public int? ApplianceId { get; set; }
 
         [JsonIgnore]

@@ -4,6 +4,7 @@ using LightOn.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LightOn.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230525090321_EnergyConsumption")]
+    partial class EnergyConsumption
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -61,9 +63,6 @@ namespace LightOn.Migrations
                         .HasColumnType("int");
 
                     b.Property<float>("ApproximateLoad")
-                        .HasColumnType("real");
-
-                    b.Property<float>("EnergyConsumed")
                         .HasColumnType("real");
 
                     b.Property<DateTime>("UsageEndDate")
@@ -531,7 +530,7 @@ namespace LightOn.Migrations
             modelBuilder.Entity("LightOn.Models.ApplianceUsagePlanned", b =>
                 {
                     b.HasOne("LightOn.Models.Appliance", "Appliance")
-                        .WithMany("ApplianceUsagePlanneds")
+                        .WithMany()
                         .HasForeignKey("ApplianceId");
 
                     b.Navigation("Appliance");
@@ -684,8 +683,6 @@ namespace LightOn.Migrations
             modelBuilder.Entity("LightOn.Models.Appliance", b =>
                 {
                     b.Navigation("ApplianceUsageHistories");
-
-                    b.Navigation("ApplianceUsagePlanneds");
                 });
 
             modelBuilder.Entity("LightOn.Models.Building", b =>

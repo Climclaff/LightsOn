@@ -51,7 +51,14 @@ namespace LightOn.Repositories
         {
             try
             {
-                return await _context.Appliances.Where(a => a.UserId == id).ToListAsync();
+                return await _context.Appliances.Where(a => a.UserId == id).Select(a => new Appliance
+                {
+                    Id = a.Id,
+                    Name = a.Name,
+                    Power= a.Power,
+                    PowerFactor= a.PowerFactor,
+                    UserId= a.UserId
+                }).ToListAsync();
             }
             catch (Exception ex)
             {

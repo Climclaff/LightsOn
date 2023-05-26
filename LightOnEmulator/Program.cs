@@ -10,20 +10,25 @@ namespace LightOnEmulator
             using (ClientWebSocket webSocket = new ClientWebSocket())
             {
                 Thread.Sleep(6000);
-                Uri serverUri = new Uri("wss://localhost:7014/ws?id=1"); // Replace with your server's WebSocket endpoint and transformer ID
+                Uri serverUri = new Uri("wss://localhost:7014/ws?id=1"); 
 
                 try
                 {
                     await webSocket.ConnectAsync(serverUri, CancellationToken.None);
                     Console.WriteLine("WebSocket connected.");
 
+                    string message = "Test";
+                    byte[] buffer = Encoding.UTF8.GetBytes(message);
+                    await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
                     // Handle the WebSocket connection
                     await HandleWebSocketConnection(webSocket);
+
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"WebSocket error: {ex.Message}");
                 }
+                
             }
         }
 
@@ -46,5 +51,6 @@ namespace LightOnEmulator
                 Console.WriteLine($"WebSocket error: {ex.Message}");
             }
         }
+
     }
 }

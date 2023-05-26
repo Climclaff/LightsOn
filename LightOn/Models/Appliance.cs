@@ -19,5 +19,8 @@ namespace LightOn.Models
 
         [JsonIgnore]
         public ICollection<ApplianceUsageHistory>? ApplianceUsageHistories { get; set; }
+
+        [JsonIgnore]
+        public ICollection<ApplianceUsagePlanned>? ApplianceUsagePlanneds { get; set; }
     }
 }

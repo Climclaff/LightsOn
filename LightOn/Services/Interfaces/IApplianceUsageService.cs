@@ -12,5 +12,10 @@ namespace LightOn.Services.Interfaces
         Task<ServiceResponse<ApplianceUsageHistory>> CreateAsync(ApplianceUsageHistory usageHistory);
         Task<ServiceResponse<ApplianceUsageHistory>> UpdateAsync(ApplianceUsageHistory usageHistory);
         Task<ServiceResponse<ApplianceUsageHistory>> DeleteAsync(int id);
+        Task<ServiceResponse<(int[], float[])>> HistogramByUserConsumption(int id);
+        Task<ServiceResponse<Dictionary<string, object>>> LineChartByUserConsumption(int id);
+        Task<ServiceResponse<Dictionary<string, object>>> BarChartByUserConsumption(int id);
+        Task<ServiceResponse<object>> ScatterChartByUserConsumption(int id);
+        Task<ServiceResponse<object>> PieChartByUserConsumption(int id);
     }
 }

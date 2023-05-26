@@ -4,6 +4,7 @@ using LightOn.Migrations;
 using LightOn.Models;
 using LightOn.Repositories.Interfaces;
 using LightOn.Services.Interfaces;
+using LightOn.BLL;
 using Microsoft.EntityFrameworkCore;
 #pragma warning disable CS8602 
 #pragma warning disable CS8603 
@@ -165,12 +166,15 @@ namespace LightOn.Repositories
             {
                 foreach (var plan in expiredUsagePlanned)
                 {
+                    var appliance = await _context.Appliances.Where(appliance => appliance.Id == plan.ApplianceId).FirstOrDefaultAsync();
+                    var energy = ConsumptionCalculator.Calculate(appliance.Power, appliance.PowerFactor, plan.UsageStartDate, plan.UsageEndDate);
                     var usageHistory = new ApplianceUsageHistory
                     {
                         UsageStartDate = plan.UsageStartDate,
                         UsageEndDate = plan.UsageEndDate,
                         ApproximateLoad = plan.ApproximateLoad,
-                        ApplianceId = plan.ApplianceId
+                        ApplianceId = plan.ApplianceId,
+                        EnergyConsumed = energy
                     };
 
                     await _context.ApplianceUsageHistories.AddAsync(usageHistory);
@@ -188,15 +192,18 @@ namespace LightOn.Repositories
                 .ToListAsync();
 
             if (expiredUsagePlanned.Any())
-            {
+            {              
                 foreach (var plan in expiredUsagePlanned)
                 {
+                    var appliance = await _context.Appliances.Where(appliance => appliance.Id == plan.ApplianceId).FirstOrDefaultAsync();
+                    var energy = ConsumptionCalculator.Calculate(appliance.Power, appliance.PowerFactor, plan.UsageStartDate, plan.UsageEndDate);
                     var usageHistory = new ApplianceUsageHistory
                     {
                         UsageStartDate = plan.UsageStartDate,
                         UsageEndDate = plan.UsageEndDate,
                         ApproximateLoad = plan.ApproximateLoad,
-                        ApplianceId = plan.ApplianceId
+                        ApplianceId = plan.ApplianceId,
+                        EnergyConsumed = energy
                     };
 
                     await _context.ApplianceUsageHistories.AddAsync(usageHistory);
@@ -216,13 +223,16 @@ namespace LightOn.Repositories
 
             if (expiredUsagePlan != null)
             {
-                    var usageHistory = new ApplianceUsageHistory
-                    {
-                        UsageStartDate = expiredUsagePlan.UsageStartDate,
-                        UsageEndDate = expiredUsagePlan.UsageEndDate,
-                        ApproximateLoad = expiredUsagePlan.ApproximateLoad,
-                        ApplianceId = expiredUsagePlan.ApplianceId
-                    };
+                var appliance = await _context.Appliances.Where(appliance => appliance.Id == expiredUsagePlan.ApplianceId).FirstOrDefaultAsync();
+                var energy = ConsumptionCalculator.Calculate(appliance.Power, appliance.PowerFactor, expiredUsagePlan.UsageStartDate, expiredUsagePlan.UsageEndDate);
+                var usageHistory = new ApplianceUsageHistory
+                {
+                    UsageStartDate = expiredUsagePlan.UsageStartDate,
+                    UsageEndDate = expiredUsagePlan.UsageEndDate,
+                    ApproximateLoad = expiredUsagePlan.ApproximateLoad,
+                    ApplianceId = expiredUsagePlan.ApplianceId,
+                    EnergyConsumed = energy
+                };
 
                     await _context.ApplianceUsageHistories.AddAsync(usageHistory);
                     _context.ApplianceUsagePlanneds.Remove(expiredUsagePlan);
