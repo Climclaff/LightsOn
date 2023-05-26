@@ -17,28 +17,27 @@ namespace LightOn.Controllers
 
         [HttpGet]
         [Route("HistogramByUserConsumption")]
-        public async Task<IActionResult> HistogramByUserConsumption([FromQuery] int id)
+        public async Task<IActionResult> HistogramByUserConsumption([FromQuery] int id, DateTime startDate)
         {
-            var result = await _service.HistogramByUserConsumption(id);
+            var result = await _service.HistogramByUserConsumption(id, startDate);
             if (result.Success)
             {
-                if (result.Data.Item1 == null || result.Data.Item2 == null)
+                if (result.Data == null)
                 {
                     return NotFound();
                 }
                 return Ok(new
                 {
-                    result.Data.Item1,
-                    result.Data.Item2
+                    result.Data
                 });
             }
             return StatusCode(500, result.ErrorMessage);
         }
         [HttpGet]
         [Route("LineChartByUserConsumption")]
-        public async Task<IActionResult> LineChartByUserConsumption([FromQuery] int id)
+        public async Task<IActionResult> LineChartByUserConsumption([FromQuery] int id, DateTime startDate)
         {
-            var result = await _service.LineChartByUserConsumption(id);
+            var result = await _service.LineChartByUserConsumption(id, startDate);
             if (result.Success)
             {
                 if (result == null)
@@ -51,9 +50,9 @@ namespace LightOn.Controllers
         }
         [HttpGet]
         [Route("BarChartByUserConsumption")]
-        public async Task<IActionResult> BarChartByUserConsumption([FromQuery] int id)
+        public async Task<IActionResult> BarChartByUserConsumption([FromQuery] int id, DateTime startDate)
         {
-            var result = await _service.BarChartByUserConsumption(id);
+            var result = await _service.BarChartByUserConsumption(id, startDate);
             if (result.Success)
             {
                 if (result == null)
@@ -66,9 +65,9 @@ namespace LightOn.Controllers
         }
         [HttpGet]
         [Route("ScatterChartByUserConsumption")]
-        public async Task<IActionResult> ScatterChartByUserConsumption([FromQuery] int id)
+        public async Task<IActionResult> ScatterChartByUserConsumption([FromQuery] int id, DateTime startDate)
         {
-            var result = await _service.ScatterChartByUserConsumption(id);
+            var result = await _service.ScatterChartByUserConsumption(id, startDate);
             if (result.Success)
             {
                 if (result == null)
@@ -81,9 +80,9 @@ namespace LightOn.Controllers
         }
         [HttpGet]
         [Route("PieChartByUserConsumption")]
-        public async Task<IActionResult> PieChartByUserConsumption([FromQuery] int id)
+        public async Task<IActionResult> PieChartByUserConsumption([FromQuery] int id, DateTime startDate)
         {
-            var result = await _service.PieChartByUserConsumption(id);
+            var result = await _service.PieChartByUserConsumption(id, startDate);
             if (result.Success)
             {
                 if (result == null)

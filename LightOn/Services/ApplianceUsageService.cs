@@ -133,26 +133,28 @@ namespace LightOn.Services
                 return new ServiceResponse<List<ApplianceUsageHistory>> { Success = false, ErrorMessage = ex.Message };
             }
         }
-        public async Task<ServiceResponse<(int[], float[])>> HistogramByUserConsumption(int id)
+        public async Task<ServiceResponse<Dictionary<string, object>>> HistogramByUserConsumption(int id, DateTime startDate)
         {
             try
             {
                 var usagePlans = await _repository.GetByUserAsync(id);
-                var result = EnergyConsumptionAnalyzer.GenerateHistogram(usagePlans);
-                return new ServiceResponse<(int[], float[])> { Success = true, Data = result };
+                usagePlans = usagePlans.Where(plan => plan.UsageStartDate >= startDate).ToList();
+                var result = EnergyConsumptionAnalyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Histogram);
+                return new ServiceResponse<Dictionary<string, object>> { Success = true, Data = result };
             }
             catch (Exception ex)
             {
                 _logger.LogError($"An error occurred while getting histogram for user with id {id}", ex);
-                return new ServiceResponse<(int[], float[])> { Success = false, ErrorMessage = ex.Message };
+                return new ServiceResponse<Dictionary<string, object>> { Success = false, ErrorMessage = ex.Message };
             }
         }
-        public async Task<ServiceResponse<Dictionary<string, object>>> LineChartByUserConsumption(int id)
+        public async Task<ServiceResponse<Dictionary<string, object>>> LineChartByUserConsumption(int id, DateTime startDate)
         {
             try
             {
                 var usagePlans = await _repository.GetByUserAsync(id);
-                var result = EnergyConsumptionAnalyzer.GenerateLineChart(usagePlans);
+                usagePlans = usagePlans.Where(plan => plan.UsageStartDate >= startDate).ToList();
+                var result = EnergyConsumptionAnalyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Line);
                 return new ServiceResponse<Dictionary<string, object>> { Success = true, Data = result };
             }
             catch (Exception ex)
@@ -161,12 +163,13 @@ namespace LightOn.Services
                 return new ServiceResponse<Dictionary<string, object>> { Success = false, ErrorMessage = ex.Message };
             }
         }
-        public async Task<ServiceResponse<Dictionary<string, object>>> BarChartByUserConsumption(int id)
+        public async Task<ServiceResponse<Dictionary<string, object>>> BarChartByUserConsumption(int id, DateTime startDate)
         {
             try
             {
                 var usagePlans = await _repository.GetByUserAsync(id);
-                var result = EnergyConsumptionAnalyzer.GenerateBarChart(usagePlans);
+                usagePlans = usagePlans.Where(plan => plan.UsageStartDate >= startDate).ToList();
+                var result = EnergyConsumptionAnalyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Bar);
                 return new ServiceResponse<Dictionary<string, object>> { Success = true, Data = result };
             }
             catch (Exception ex)
@@ -175,36 +178,40 @@ namespace LightOn.Services
                 return new ServiceResponse<Dictionary<string, object>> { Success = false, ErrorMessage = ex.Message };
             }
         }
-
-        public async Task<ServiceResponse<object>> ScatterChartByUserConsumption(int id)
+        public async Task<ServiceResponse<Dictionary<string, object>>> ScatterChartByUserConsumption(int id, DateTime startDate)
         {
             try
             {
                 var usagePlans = await _repository.GetByUserAsync(id);
-                var result = EnergyConsumptionAnalyzer.GenerateScatterChart(usagePlans);
-                return new ServiceResponse<object> { Success = true, Data = result };
+                usagePlans = usagePlans.Where(plan => plan.UsageStartDate >= startDate).ToList();
+                var result = EnergyConsumptionAnalyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Scatter);
+                return new ServiceResponse<Dictionary<string, object>> { Success = true, Data = result };
             }
             catch (Exception ex)
             {
                 _logger.LogError($"An error occurred while getting scatter chart for user with id {id}", ex);
-                return new ServiceResponse<object> { Success = false, ErrorMessage = ex.Message };
+                return new ServiceResponse<Dictionary<string, object>> { Success = false, ErrorMessage = ex.Message };
             }
         }
-        public async Task<ServiceResponse<object>> PieChartByUserConsumption(int id)
+        public async Task<ServiceResponse<Dictionary<string, object>>> PieChartByUserConsumption(int id, DateTime startDate)
         {
             try
             {
                 var usagePlans = await _repository.GetByUserAsync(id);
+                usagePlans = usagePlans.Where(plan => plan.UsageStartDate >= startDate).ToList();
+
                 List<Appliance> applianceList = await _applianceRepository.GetUserAppliancesAsync(id);
                 var applianceIds = usagePlans.Select(u => u.ApplianceId).Distinct().ToList();
                 applianceList = applianceList.Where(a => applianceIds.Contains(a.Id)).ToList();
-                var result = EnergyConsumptionAnalyzer.GeneratePieChart(usagePlans, applianceList);
-                return new ServiceResponse<object> { Success = true, Data = result };
+
+                var result = EnergyConsumptionAnalyzer.GenerateChart(usagePlans, applianceList, EnergyConsumptionAnalyzer.ChartType.Pie);
+
+                return new ServiceResponse<Dictionary<string, object>> { Success = true, Data = result };
             }
             catch (Exception ex)
             {
                 _logger.LogError($"An error occurred while getting scatter chart for user with id {id}", ex);
-                return new ServiceResponse<object> { Success = false, ErrorMessage = ex.Message };
+                return new ServiceResponse<Dictionary<string, object>> { Success = false, ErrorMessage = ex.Message };
             }
         }
 
