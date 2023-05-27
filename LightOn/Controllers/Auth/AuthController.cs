@@ -1,5 +1,6 @@
 ﻿using LightOn.Models;
 using LightOn.Models.Auth;
+using LightOn.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,13 +23,15 @@ namespace LightOn.Controllers.Auth
     {
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
-
-        public AuthController(UserManager<User> userManager, IConfiguration configuration)
+        private readonly IProfileService _profileService;
+        public AuthController(UserManager<User> userManager, IProfileService profileService, IConfiguration configuration)
         {
             _userManager = userManager;
             _configuration = configuration;
+            _profileService = profileService;
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
@@ -62,6 +65,7 @@ namespace LightOn.Controllers.Auth
             return Ok(new { Status = "Success", Message = "User created" });
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -133,6 +137,102 @@ namespace LightOn.Controllers.Auth
                     return Unauthorized();
                 }
         */
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("GetRegions")]
+        public async Task<IActionResult> GetRegions()
+        {
+            var result = await _profileService.GetRegionsAsync();
+
+            if (result.NotFound)
+            {
+                return NotFound();
+            }
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            return StatusCode(500, result.ErrorMessage);
+        }
+
+        [AllowAnonymous]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet]
+        [Route("GetDistrictsOfRegion")]
+        public async Task<IActionResult> GetDistrictsOfRegion([FromQuery] int id)
+        {
+            var result = await _profileService.GetDistrictsOfRegionAsync(id);
+
+            if (result.NotFound)
+            {
+                return NotFound();
+            }
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            return StatusCode(500, result.ErrorMessage);
+        }
+
+        [AllowAnonymous]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet]
+        [Route("GetTownsOfDistrict")]
+        public async Task<IActionResult> GetTownsOfDistrict([FromQuery] int id)
+        {
+            var result = await _profileService.GetTownsOfDistrictAsync(id);
+
+            if (result.NotFound)
+            {
+                return NotFound();
+            }
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            return StatusCode(500, result.ErrorMessage);
+        }
+
+        [AllowAnonymous]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet]
+        [Route("GetStreetsOfTown")]
+        public async Task<IActionResult> GetStreetsOfTown([FromQuery] int id)
+        {
+            var result = await _profileService.GetStreetsOfTownAsync(id);
+
+            if (result.NotFound)
+            {
+                return NotFound();
+            }
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            return StatusCode(500, result.ErrorMessage);
+        }
+
+        [AllowAnonymous]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet]
+        [Route("GetBuildingsOfStreet")]
+        public async Task<IActionResult> GetBuildingsOfStreet([FromQuery] int id)
+        {
+            var result = await _profileService.GetBuildingsOfStreetAsync(id);
+
+            if (result.NotFound)
+            {
+                return NotFound();
+            }
+            if (result.Success)
+            {
+                return Ok(result.Data);
+            }
+            return StatusCode(500, result.ErrorMessage);
+        }
+
+
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpPost]
         [Route("Test")]

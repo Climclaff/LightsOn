@@ -9,7 +9,5 @@ namespace LightOn.Services.Interfaces
         Task<ServiceResponse<List<User>>> GetAllAsync();
         Task<ServiceResponse<List<User>>> GetRangeAsync(int offset, int count);
         Task<ServiceResponse<User>> DeleteAsync(int id);
-
-        Task<ServiceResponse<User>> ChangeImageAsync(int userId, byte[] imgData);
     }
 }

@@ -80,6 +80,7 @@ builder.Services.AddScoped<ITownRepository, TownRepository>();
 builder.Services.AddScoped<ITransformerMeasurementRepository, TransformerMeasurementRepository>();
 builder.Services.AddScoped<ITransformerRepository, TransformerRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 
 builder.Services.AddScoped<IApplianceService, ApplianceService>();
 builder.Services.AddScoped<IApplianceUsageService, ApplianceUsageService>();
@@ -93,6 +94,7 @@ builder.Services.AddScoped<ITownService, TownService>();
 builder.Services.AddScoped<ITransformerMeasurementService, TransformerMeasurementService>();
 builder.Services.AddScoped<ITransformerService, TransformerService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
