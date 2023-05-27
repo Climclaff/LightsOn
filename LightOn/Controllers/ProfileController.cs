@@ -184,11 +184,18 @@ namespace LightOn.Controllers
 
             return Ok();
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         [Route("ChangeImage")]
-        public async Task<IActionResult> ChangeImage([FromQuery] int userId, byte[] imgData)
+        public async Task<IActionResult> ChangeImage(byte[] imgData)
         {
-            var result = await _profileService.ChangeImageAsync(userId, imgData);
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            var result = await _profileService.ChangeImageAsync(user.Id, imgData);
             if (result.NotFound)
             {
                 return NotFound();

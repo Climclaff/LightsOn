@@ -1,6 +1,11 @@
-﻿using LightOn.Services.Interfaces;
+﻿using LightOn.Models;
+using LightOn.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LightOn.Controllers
 {
@@ -9,17 +14,25 @@ namespace LightOn.Controllers
     public class UsageAnalysisController : ControllerBase
     {
         private readonly IApplianceUsageService _service;
-
-        public UsageAnalysisController(IApplianceUsageService applianceUsageService)
+        private readonly UserManager<User> _userManager;
+        public UsageAnalysisController(UserManager<User> userManager, IApplianceUsageService applianceUsageService)
         {
+            _userManager = userManager;
             _service = applianceUsageService;
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("HistogramByUserConsumption")]
-        public async Task<IActionResult> HistogramByUserConsumption([FromQuery] int id, DateTime startDate)
+        public async Task<IActionResult> HistogramByUserConsumption(DateTime startDate)
         {
-            var result = await _service.HistogramByUserConsumption(id, startDate);
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            var result = await _service.HistogramByUserConsumption(user.Id, startDate);
             if (result.Success)
             {
                 if (result.Data == null)
@@ -33,11 +46,19 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("LineChartByUserConsumption")]
-        public async Task<IActionResult> LineChartByUserConsumption([FromQuery] int id, DateTime startDate)
+        public async Task<IActionResult> LineChartByUserConsumption(DateTime startDate)
         {
-            var result = await _service.LineChartByUserConsumption(id, startDate);
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            var result = await _service.LineChartByUserConsumption(user.Id, startDate);
             if (result.Success)
             {
                 if (result == null)
@@ -48,11 +69,19 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("BarChartByUserConsumption")]
-        public async Task<IActionResult> BarChartByUserConsumption([FromQuery] int id, DateTime startDate)
+        public async Task<IActionResult> BarChartByUserConsumption(DateTime startDate)
         {
-            var result = await _service.BarChartByUserConsumption(id, startDate);
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            var result = await _service.BarChartByUserConsumption(user.Id, startDate);
             if (result.Success)
             {
                 if (result == null)
@@ -63,11 +92,19 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("ScatterChartByUserConsumption")]
-        public async Task<IActionResult> ScatterChartByUserConsumption([FromQuery] int id, DateTime startDate)
+        public async Task<IActionResult> ScatterChartByUserConsumption(DateTime startDate)
         {
-            var result = await _service.ScatterChartByUserConsumption(id, startDate);
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            var result = await _service.ScatterChartByUserConsumption(user.Id, startDate);
             if (result.Success)
             {
                 if (result == null)
@@ -78,11 +115,19 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("PieChartByUserConsumption")]
-        public async Task<IActionResult> PieChartByUserConsumption([FromQuery] int id, DateTime startDate)
+        public async Task<IActionResult> PieChartByUserConsumption(DateTime startDate)
         {
-            var result = await _service.PieChartByUserConsumption(id, startDate);
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            var result = await _service.PieChartByUserConsumption(user.Id, startDate);
             if (result.Success)
             {
                 if (result == null)
