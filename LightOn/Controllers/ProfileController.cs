@@ -235,5 +235,27 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost]
+        [Route("ChangeBuildingArea")]
+        public async Task<IActionResult> ChangeBuildingArea([FromQuery] int area)
+        {
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null || area == 0)
+            {
+                return BadRequest();
+            }
+            var result = await _profileService.ChangeBuildingAreaAsync(user.Id, area);
+            if (result.NotFound)
+            {
+                return NotFound();
+            }
+            if (result.Success)
+            {
+                return Ok();
+            }
+            return StatusCode(500, result.ErrorMessage);
+        }
     }
 }

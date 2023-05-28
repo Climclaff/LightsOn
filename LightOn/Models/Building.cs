@@ -10,6 +10,8 @@ namespace LightOn.Models
 
         public int? StreetId { get; set; }
 
+        public int? Area { get; set; }
+
         [JsonIgnore]
         public Street? Street { get; set; }
 

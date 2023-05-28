@@ -194,5 +194,26 @@ namespace LightOn.Repositories
                 throw new RepositoryException("Failed to change user name", ex);
             }
         }
+        public async Task<bool> ChangeBuildingAreaAsync(int userId, int area)
+        {
+            try
+            {
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null)
+                {
+                    throw new NotFoundException($"User with id {userId} not found.");
+                }
+                var building = await _context.Buildings.FindAsync(user.BuildingId);
+                building.Area = area;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to change building area", ex);
+                throw new RepositoryException("Failed to change building area", ex);
+            }
+        }
+
     }
 }

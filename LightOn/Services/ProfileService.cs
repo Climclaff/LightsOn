@@ -66,6 +66,22 @@ namespace LightOn.Services
                 return new ServiceResponse<bool> { Success = false, ErrorMessage = ex.Message };
             }
         }
+        public async Task<ServiceResponse<bool>> ChangeBuildingAreaAsync(int userId, int area)
+        {
+            try
+            {
+                var result = await _repository.ChangeBuildingAreaAsync(userId, area);
+                return new ServiceResponse<bool> { Success = true };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<bool> { Success = false, ErrorMessage = ex.Message, NotFound = true };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<bool> { Success = false, ErrorMessage = ex.Message };
+            }
+        }
         public async Task<ServiceResponse<List<Building>>> GetBuildingsOfStreetAsync(int id)
         {
             try

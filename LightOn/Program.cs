@@ -33,7 +33,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddIdentity<User, Role>()
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)    
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
      .AddJwtBearer(options =>
      {
          options.SaveToken = true;
@@ -47,12 +47,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
              ClockSkew = TimeSpan.FromMinutes(10),
              IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JWT:Secret").Value))
          };
-     })
+     });
+     /*
      .AddGoogle(googleOptions =>
      {
          googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
          googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-     });
+     });*/
 
 
 builder.Services.AddAuthorization(options =>
@@ -67,7 +68,6 @@ builder.Services.AddDistributedSqlServerCache(options =>
     options.SchemaName = "dbo";
     options.TableName = "CachedValues";
 });
-
 builder.Services.AddScoped<IApplianceRepository, ApplianceRepository>();
 builder.Services.AddScoped<IApplianceUsageRepository, ApplianceUsageRepository>();
 builder.Services.AddScoped<IApplianceUsagePlannedRepository, ApplianceUsagePlannedRepository>();
@@ -100,9 +100,10 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+   // swagger must be here
 }
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

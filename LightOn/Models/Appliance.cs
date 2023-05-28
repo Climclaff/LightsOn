@@ -14,6 +14,8 @@ namespace LightOn.Models
 
         public int? UserId { get; set; }
 
+        public float? Amperage { get; set; }
+
         [JsonIgnore]
         public User? User { get; set; }
 
