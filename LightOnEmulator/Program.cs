@@ -10,8 +10,8 @@ namespace LightOnEmulator
             using (ClientWebSocket webSocket = new ClientWebSocket())
             {
                 Thread.Sleep(6000);
-                Uri serverUri = new Uri("wss://localhost:7014/ws?id=1"); 
-
+                Uri serverUri = new Uri("wss://localhost:7014/ws?id=1");
+                
                 try
                 {
                     await webSocket.ConnectAsync(serverUri, CancellationToken.None);
@@ -41,7 +41,7 @@ namespace LightOnEmulator
                     byte[] buffer = new byte[1024];
                     WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
                     string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-
+                    
                     // Handle the received message
                     Console.WriteLine($"Received message: {message}");
                 }

@@ -10,8 +10,6 @@ namespace LightOn.Models
 
         public DateTime UsageEndDate { get; set; }
 
-        public float ApproximateLoad { get; set; }
-
         public float EnergyConsumed { get; set; }
 
         public int? ApplianceId { get; set; }

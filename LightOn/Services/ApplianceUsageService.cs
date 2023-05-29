@@ -19,8 +19,10 @@ namespace LightOn.Services
         {
             _applianceRepository = applianceRepository;
             _repository = repository;
-            _logger = logger;
+            _logger = logger;         
         }
+
+        EnergyConsumptionAnalyzer analyzer = new EnergyConsumptionAnalyzer();
 
         public async Task<ServiceResponse<ApplianceUsageHistory>> CreateAsync(ApplianceUsageHistory usageHistory)
         {
@@ -139,7 +141,7 @@ namespace LightOn.Services
             {
                 var usagePlans = await _repository.GetByUserAsync(id);
                 usagePlans = usagePlans.Where(plan => plan.UsageStartDate >= startDate).ToList();
-                var result = EnergyConsumptionAnalyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Histogram);
+                var result = analyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Histogram);
                 return new ServiceResponse<Dictionary<string, object>> { Success = true, Data = result };
             }
             catch (Exception ex)
@@ -154,7 +156,7 @@ namespace LightOn.Services
             {
                 var usagePlans = await _repository.GetByUserAsync(id);
                 usagePlans = usagePlans.Where(plan => plan.UsageStartDate >= startDate).ToList();
-                var result = EnergyConsumptionAnalyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Line);
+                var result = analyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Line);
                 return new ServiceResponse<Dictionary<string, object>> { Success = true, Data = result };
             }
             catch (Exception ex)
@@ -169,7 +171,7 @@ namespace LightOn.Services
             {
                 var usagePlans = await _repository.GetByUserAsync(id);
                 usagePlans = usagePlans.Where(plan => plan.UsageStartDate >= startDate).ToList();
-                var result = EnergyConsumptionAnalyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Bar);
+                var result = analyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Bar);
                 return new ServiceResponse<Dictionary<string, object>> { Success = true, Data = result };
             }
             catch (Exception ex)
@@ -184,7 +186,7 @@ namespace LightOn.Services
             {
                 var usagePlans = await _repository.GetByUserAsync(id);
                 usagePlans = usagePlans.Where(plan => plan.UsageStartDate >= startDate).ToList();
-                var result = EnergyConsumptionAnalyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Scatter);
+                var result = analyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Scatter);
                 return new ServiceResponse<Dictionary<string, object>> { Success = true, Data = result };
             }
             catch (Exception ex)
@@ -204,7 +206,7 @@ namespace LightOn.Services
                 var applianceIds = usagePlans.Select(u => u.ApplianceId).Distinct().ToList();
                 applianceList = applianceList.Where(a => applianceIds.Contains(a.Id)).ToList();
 
-                var result = EnergyConsumptionAnalyzer.GenerateChart(usagePlans, applianceList, EnergyConsumptionAnalyzer.ChartType.Pie);
+                var result = analyzer.GenerateChart(usagePlans, applianceList, EnergyConsumptionAnalyzer.ChartType.Pie);
 
                 return new ServiceResponse<Dictionary<string, object>> { Success = true, Data = result };
             }

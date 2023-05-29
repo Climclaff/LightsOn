@@ -11,8 +11,6 @@ namespace LightOn.Models
 
         public DateTime UsageEndDate { get; set; }
 
-        public float ApproximateLoad { get; set; }
-
         public int? ApplianceId { get; set; }
 
         [JsonIgnore]

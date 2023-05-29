@@ -4,7 +4,7 @@ using LightOn.Models;
 
 namespace LightOn.BLL
 {
-    public static class EnergyConsumptionAnalyzer
+    public class EnergyConsumptionAnalyzer
     {
         public enum ChartType
         {
@@ -14,7 +14,7 @@ namespace LightOn.BLL
             Pie,
             Scatter
         }
-        private static Dictionary<ChartType, IChartGenerator> chartGenerators = new Dictionary<ChartType, IChartGenerator>
+        private Dictionary<ChartType, IChartGenerator> chartGenerators = new Dictionary<ChartType, IChartGenerator>
         {
             { ChartType.Histogram, new HistogramChartGenerator() },
             { ChartType.Line, new LineChartGenerator() },
@@ -23,7 +23,7 @@ namespace LightOn.BLL
             { ChartType.Scatter, new ScatterChartGenerator() }
         };
 
-        public static Dictionary<string, object> GenerateChart(List<ApplianceUsageHistory> usageHistory, List<Appliance> appliances, ChartType chartType)
+        public Dictionary<string, object> GenerateChart(List<ApplianceUsageHistory> usageHistory, List<Appliance> appliances, ChartType chartType)
         {
             if (chartGenerators.ContainsKey(chartType))
             {

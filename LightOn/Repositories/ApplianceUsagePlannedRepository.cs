@@ -167,12 +167,11 @@ namespace LightOn.Repositories
                 foreach (var plan in expiredUsagePlanned)
                 {
                     var appliance = await _context.Appliances.Where(appliance => appliance.Id == plan.ApplianceId).FirstOrDefaultAsync();
-                    var energy = ConsumptionCalculator.Calculate(appliance.Power, appliance.PowerFactor, plan.UsageStartDate, plan.UsageEndDate);
+                    var energy = ConsumptionCalculator.Calculate(appliance.Power, plan.UsageStartDate, plan.UsageEndDate);
                     var usageHistory = new ApplianceUsageHistory
                     {
                         UsageStartDate = plan.UsageStartDate,
                         UsageEndDate = plan.UsageEndDate,
-                        ApproximateLoad = plan.ApproximateLoad,
                         ApplianceId = plan.ApplianceId,
                         EnergyConsumed = energy
                     };
@@ -196,12 +195,11 @@ namespace LightOn.Repositories
                 foreach (var plan in expiredUsagePlanned)
                 {
                     var appliance = await _context.Appliances.Where(appliance => appliance.Id == plan.ApplianceId).FirstOrDefaultAsync();
-                    var energy = ConsumptionCalculator.Calculate(appliance.Power, appliance.PowerFactor, plan.UsageStartDate, plan.UsageEndDate);
+                    var energy = ConsumptionCalculator.Calculate(appliance.Power, plan.UsageStartDate, plan.UsageEndDate);
                     var usageHistory = new ApplianceUsageHistory
                     {
                         UsageStartDate = plan.UsageStartDate,
                         UsageEndDate = plan.UsageEndDate,
-                        ApproximateLoad = plan.ApproximateLoad,
                         ApplianceId = plan.ApplianceId,
                         EnergyConsumed = energy
                     };
@@ -224,12 +222,11 @@ namespace LightOn.Repositories
             if (expiredUsagePlan != null)
             {
                 var appliance = await _context.Appliances.Where(appliance => appliance.Id == expiredUsagePlan.ApplianceId).FirstOrDefaultAsync();
-                var energy = ConsumptionCalculator.Calculate(appliance.Power, appliance.PowerFactor, expiredUsagePlan.UsageStartDate, expiredUsagePlan.UsageEndDate);
+                var energy = ConsumptionCalculator.Calculate(appliance.Power, expiredUsagePlan.UsageStartDate, expiredUsagePlan.UsageEndDate);
                 var usageHistory = new ApplianceUsageHistory
                 {
                     UsageStartDate = expiredUsagePlan.UsageStartDate,
                     UsageEndDate = expiredUsagePlan.UsageEndDate,
-                    ApproximateLoad = expiredUsagePlan.ApproximateLoad,
                     ApplianceId = expiredUsagePlan.ApplianceId,
                     EnergyConsumed = energy
                 };
