@@ -6,7 +6,7 @@ namespace LightOn.Services.Interfaces
 {
     public interface IProfileService
     {
-        Task<ServiceResponse<bool>> ChangeLocation(int userId, int regionId, int districtId, int townId, int streetId, int buildingId);
+        Task<ServiceResponse<bool>> ChangeLocationAsync(int userId, int regionId, int districtId, int townId, int streetId, int buildingId);
         Task<ServiceResponse<bool>> ChangeImageAsync(int userId, byte[] imgData);
         Task<ServiceResponse<bool>> ChangeNameAsync(int userId, ChangeNameModel model);
         Task<ServiceResponse<bool>> ChangeBuildingAreaAsync(int userId, int area);

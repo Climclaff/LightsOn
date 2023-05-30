@@ -1,8 +1,24 @@
-﻿using System.Net.WebSockets;
+﻿using LightOn.Models;
+using System;
+using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace LightOnEmulator
 {
+    public class TransformerMeasurement
+    {
+        public int Id { get; set; }
+
+        public float CurrentLoad { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public int? TransformerId { get; set; }
+
+    }
     class Program
     {
         static async Task Main(string[] args)
@@ -17,9 +33,7 @@ namespace LightOnEmulator
                     await webSocket.ConnectAsync(serverUri, CancellationToken.None);
                     Console.WriteLine("WebSocket connected.");
 
-                    string message = "Test";
-                    byte[] buffer = Encoding.UTF8.GetBytes(message);
-                    await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
+
                     // Handle the WebSocket connection
                     await HandleWebSocketConnection(webSocket);
 
@@ -38,12 +52,29 @@ namespace LightOnEmulator
             {
                 while (webSocket.State == WebSocketState.Open)
                 {
-                    byte[] buffer = new byte[1024];
+                    TransformerMeasurement measurement = new TransformerMeasurement();
+                    var buffer = new byte[256];
                     WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    
+                    if (result.EndOfMessage)
+                    {
+                        Dictionary<int, float> receivedValue = DeserializePair(buffer, result.Count);
+
+
+                        measurement.CurrentLoad = receivedValue.Values.FirstOrDefault();
+                        measurement.TransformerId = receivedValue.Keys.FirstOrDefault();
+                        measurement.Date = DateTime.Now;
+
+                        var seralizedMeasurement = SerializeMeasurement(measurement);
+                        await webSocket.SendAsync(new ArraySegment<byte>(seralizedMeasurement), WebSocketMessageType.Text, true, CancellationToken.None);
+
+                    }
                     string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
                     
                     // Handle the received message
                     Console.WriteLine($"Received message: {message}");
+
+                    
                 }
             }
             catch (Exception ex)
@@ -51,6 +82,17 @@ namespace LightOnEmulator
                 Console.WriteLine($"WebSocket error: {ex.Message}");
             }
         }
+        static Dictionary<int, float> DeserializePair(byte[] buffer, int count)
+{
+            string json = Encoding.UTF8.GetString(buffer, 0, count);
+            return JsonSerializer.Deserialize<Dictionary<int, float>>(json);
+        }
 
+        static byte[] SerializeMeasurement(TransformerMeasurement measurement)
+        {
+            string json = JsonSerializer.Serialize(measurement);
+            byte[] buffer = Encoding.UTF8.GetBytes(json);
+            return buffer;
+        }
     }
 }

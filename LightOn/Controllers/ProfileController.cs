@@ -145,7 +145,7 @@ namespace LightOn.Controllers
         {
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
             var user = await _userManager.FindByNameAsync(username);
-            ServiceResponse<bool> result = await _profileService.ChangeLocation(user.Id, regionId, districtId, townId, streetId, buildingId);
+            ServiceResponse<bool> result = await _profileService.ChangeLocationAsync(user.Id, regionId, districtId, townId, streetId, buildingId);
             if (result.NotFound)
             {
                 return NotFound();

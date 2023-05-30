@@ -17,7 +17,7 @@ namespace LightOn.Repositories
             _context = context;
             _logger = logger;
         }
-        public async Task<bool> ChangeLocation(int userId, int regionId, int districtId, int townId, int streetId, int buildingId)
+        public async Task<bool> ChangeLocationAsync(int userId, int regionId, int districtId, int townId, int streetId, int buildingId)
         {
             try
             {
@@ -44,11 +44,6 @@ namespace LightOn.Repositories
                 _logger.LogError($"An error occurred while updating location for user with ID {userId}", ex);
                 throw new RepositoryException($"Error updating location for user with ID {userId}", ex);
             }
-        }
-
-        public async Task<bool> ChangeName()
-        {
-            throw new NotImplementedException();
         }
 
 

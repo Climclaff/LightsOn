@@ -46,7 +46,6 @@ namespace LightOn.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
-
         public async Task<List<Appliance>> GetUserAppliancesAsync(int id)
         {
             try
@@ -57,6 +56,7 @@ namespace LightOn.Repositories
                     Name = a.Name,
                     Power= a.Power,
                     PowerFactor= a.PowerFactor,
+                    Amperage= a.Amperage,
                     UserId= a.UserId
                 }).ToListAsync();
             }

@@ -77,6 +77,31 @@ namespace LightOn.Repositories
                 throw new RepositoryException($"Error retrieving usage plan for user with ID {id}", ex);
             }
         }
+        public async Task<List<ApplianceUsagePlanned>> GetApplianceUsageForTransformer(int id)
+        {
+            try
+            {
+                var result = await _context.Transformers.FindAsync(id);
+                if (result == null)
+                {
+                    throw new NotFoundException($"Transformer with id {id} not found.");
+                }
+                await RemoveAllExpiredPlansAsync();
+                return await _context.ApplianceUsagePlanneds
+                    .Where(u => u.Appliance.User.Building.TransformerId == id)
+                    .ToListAsync();
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while finding appliance usage for transformer with with ID {id}", ex);
+                throw new NotFoundException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while retrieving appliance usage for transformer with with ID {id}", ex);
+                throw new RepositoryException($"Error retrieving appliance usage for transformer with ID {id}", ex);
+            }
+        }
         public async Task<ApplianceUsagePlanned> GetByIdAsync(int id)
         {
             try

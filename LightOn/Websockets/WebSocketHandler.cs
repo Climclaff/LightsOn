@@ -1,14 +1,20 @@
-﻿using System.Collections.Concurrent;
+﻿using LightOn.Data;
+using LightOn.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 
 namespace LightOn.Websockets
 {
     public class WebSocketHandler
     {
+
+
         private static readonly ConcurrentDictionary<int, WebSocket> _connectedClients = new ConcurrentDictionary<int, WebSocket>();
 
-        public static async Task HandleWebSocketConnection(WebSocket webSocket, int transformerId)
+        public static async Task HandleWebSocketConnection(WebSocket webSocket, int transformerId, ApplicationDbContext context)
         {
             // Store the WebSocket instance for the client
             _connectedClients.TryAdd(transformerId, webSocket);
@@ -19,13 +25,18 @@ namespace LightOn.Websockets
                 {
                     byte[] buffer = new byte[1024];
                     WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                    string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    if (result.MessageType == WebSocketMessageType.Text)
+                    {
+                        var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                        var measurement = JsonSerializer.Deserialize<TransformerMeasurement>(json);
+                        await context.TransformerMeasurements.AddAsync(measurement);
+                        await context.SaveChangesAsync();
 
-                    // Handle the received message
-                    await HandleReceivedMessage(transformerId, message);
+                    }
+                        
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Handle any errors
             }
@@ -37,15 +48,6 @@ namespace LightOn.Websockets
             }
         }
 
-        private static async Task HandleReceivedMessage(int transformerId, string message)
-        {
-            // Implement your logic to handle the received message
-            // You can access other services or repositories as needed
-
-            // Example: Send a response message back to the client
-            string response = $"Received message: {message}";
-            await SendMessageToClient(transformerId, response);
-        }
 
         public static async Task SendMessageToClient(int transformerId, string message)
         {
@@ -54,6 +56,21 @@ namespace LightOn.Websockets
                 byte[] buffer = Encoding.UTF8.GetBytes(message);
                 await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
             }
+        }
+        public static async Task SendTransformerLoadToClient(int id, byte[] encodedMessage)
+        {
+            if (_connectedClients.TryGetValue(id, out WebSocket webSocket))
+            {
+                try
+                {
+                    await webSocket.SendAsync(new ArraySegment<byte>(encodedMessage), WebSocketMessageType.Binary, true, CancellationToken.None);
+                }
+                catch (Exception)
+                {
+                    throw new Exception($"error during sending simulation data for transformer with id {id}");
+                }
+            }
+           
         }
     }
 }

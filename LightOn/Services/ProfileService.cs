@@ -17,11 +17,11 @@ namespace LightOn.Services
             _logger = logger;
         }
 
-        public async Task<ServiceResponse<bool>> ChangeLocation(int userId, int regionId, int districtId, int townId, int streetId, int buildingId)
+        public async Task<ServiceResponse<bool>> ChangeLocationAsync(int userId, int regionId, int districtId, int townId, int streetId, int buildingId)
         {
             try
             {
-                await _repository.ChangeLocation(userId, regionId, districtId, townId, streetId, buildingId);
+                await _repository.ChangeLocationAsync(userId, regionId, districtId, townId, streetId, buildingId);
                 return new ServiceResponse<bool> { Success = true };
             }
             catch (NotFoundException ex)

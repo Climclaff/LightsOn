@@ -3,13 +3,16 @@ using LightOn.Models;
 using LightOn.Repositories;
 using LightOn.Repositories.Interfaces;
 using LightOn.Services;
+using LightOn.Services.HostedServices;
 using LightOn.Services.Interfaces;
 using LightOn.Websockets;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Net.WebSockets;
 using System.Text;
 
@@ -95,6 +98,9 @@ builder.Services.AddScoped<ITransformerMeasurementService, TransformerMeasuremen
 builder.Services.AddScoped<ITransformerService, TransformerService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+
+
+// builder.Services.AddHostedService<PlanningPageService>(); TURN ON WEBSOCKET COMMUNICATION HERE
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -124,10 +130,14 @@ void HandleWebSocketRequest(IApplicationBuilder app)
         {
             if (context.WebSockets.IsWebSocketRequest)
             {
-                int transformerId = GetTransformerIdFromContext(context); // Replace with your logic to retrieve the transformer ID
+                int transformerId = GetTransformerIdFromContext(context); 
 
                 WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                await WebSocketHandler.HandleWebSocketConnection(webSocket, transformerId);
+                using (var scope = app.ApplicationServices.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    await WebSocketHandler.HandleWebSocketConnection(webSocket, transformerId, dbContext);
+                }
             }
             else
             {
@@ -143,9 +153,7 @@ void HandleWebSocketRequest(IApplicationBuilder app)
 
 int GetTransformerIdFromContext(HttpContext context)
 {
-    // Implement your logic to extract the transformer ID from the context
-    // You can retrieve it from request headers, query parameters, or any other source
-    // For this example, assume the transformer ID is passed as a query parameter named "id"
+    // the transformer ID is passed as a query parameter named "id"
 
     if (int.TryParse(context.Request.Query["id"], out int transformerId))
     {

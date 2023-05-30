@@ -31,10 +31,9 @@ namespace LightOn.BLL
                     .Where(a => applianceIdsInSegment.Contains(a.Id))
                     .ToList();
 
-                    // Calculate the load percentage for the current segment
+
                     float loadPercentage = CalculateTransformerLoadPercentage(transformer, appliancesInSegment);
 
-                    // Add the segment to the dictionary
                     segments.TryAdd(startTime, loadPercentage);
                 }
                 return segments;
