@@ -110,7 +110,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 
 
-// builder.Services.AddHostedService<PlanningPageService>(); TURN ON WEBSOCKET COMMUNICATION HERE
+builder.Services.AddHostedService<PlanningPageService>(); //TURN ON WEBSOCKET COMMUNICATION HERE
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -30,9 +30,9 @@ namespace LightOn.Services.HostedServices
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    await CalculateTransformerLoad(1, context);
+                    await CalculateTransformerLoad(context);
 
-                    await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                    await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
                 }
             }
         }
@@ -40,41 +40,42 @@ namespace LightOn.Services.HostedServices
         {
             try
             {
-                await WebSocketHandler.SendTransformerLoadToClient(1, message);
+                await WebSocketHandler.SendTransformerLoadToClient(id, message);
             }
             catch (Exception)
             {
                 throw new Exception($"Failed to send simulation data to transformer with id {id}");
             }
         }
-        public async Task CalculateTransformerLoad(int id, ApplicationDbContext _context)
+        public async Task CalculateTransformerLoad(ApplicationDbContext _context)
         {
             try
             {
                 TransformerLoadCalculator calculator = new TransformerLoadCalculator();
+                var transformers = await _context.Transformers.ToListAsync();
+                foreach (var transf in transformers) {
+                    List<ApplianceUsagePlanned> applianceUsageForTransformer = await _context.ApplianceUsagePlanneds
+                    .Where(u => u.Appliance.User.Building.TransformerId == transf.Id)
+                    .ToListAsync();
+                    List<int?> applianceIds = applianceUsageForTransformer.Select(u => u.ApplianceId).ToList();
+                    List<Appliance> appliancesUsed = await _context.Appliances.Where(a => applianceIds.Contains(a.Id)).ToListAsync();
 
-                var transf = await _context.Transformers.FindAsync(1);
-                List<ApplianceUsagePlanned> applianceUsageForTransformer = await _context.ApplianceUsagePlanneds
-                .Where(u => u.Appliance.User.Building.TransformerId == transf.Id)
-                .ToListAsync();
-                List<int?> applianceIds = applianceUsageForTransformer.Select(u => u.ApplianceId).ToList();
-                List<Appliance> appliancesUsed = await _context.Appliances.Where(a => applianceIds.Contains(a.Id)).ToListAsync();
+                    var dictionary = calculator.GenerateSegments(transf, applianceUsageForTransformer, appliancesUsed);
+                    KeyValuePair<DateTime, float> earliestEntry = dictionary.OrderBy(entry => entry.Key).FirstOrDefault();
+                    if (earliestEntry.Key != default)
+                    {
+                        Dictionary<int, float> transformerLoad = new Dictionary<int, float>();
+                        transformerLoad.Add(transf.Id, earliestEntry.Value);
+                        string json = JsonSerializer.Serialize(transformerLoad);
+                        var encodedMessage = Encoding.UTF8.GetBytes(json);
+                        await SendSimulationToTransformer(transf.Id, encodedMessage);
 
-                var dictionary = calculator.GenerateSegments(transf, applianceUsageForTransformer, appliancesUsed);
-                KeyValuePair<DateTime, float> earliestEntry = dictionary.OrderBy(entry => entry.Key).FirstOrDefault();           
-                if (earliestEntry.Key != default)
-                {
-                    Dictionary<int, float> transformerLoad = new Dictionary<int, float>();
-                    transformerLoad.Add(transf.Id, earliestEntry.Value);
-                    string json = JsonSerializer.Serialize(transformerLoad);
-                    var encodedMessage = Encoding.UTF8.GetBytes(json);
-                    await SendSimulationToTransformer(transf.Id, encodedMessage);
-                   
+                    }
                 }
             }
             catch (Exception)
             {
-                throw new Exception($"Error during simulation of the data for transformer with id {id}");
+                throw new Exception($"Error during simulation of the data for transformers");
             }
         }
 
