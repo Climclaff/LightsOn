@@ -157,7 +157,6 @@ namespace LightOn.Controllers.Auth
         }
 
         [AllowAnonymous]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("GetDistrictsOfRegion")]
         public async Task<IActionResult> GetDistrictsOfRegion([FromQuery] int id)
@@ -176,7 +175,6 @@ namespace LightOn.Controllers.Auth
         }
 
         [AllowAnonymous]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("GetTownsOfDistrict")]
         public async Task<IActionResult> GetTownsOfDistrict([FromQuery] int id)
@@ -195,7 +193,6 @@ namespace LightOn.Controllers.Auth
         }
 
         [AllowAnonymous]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("GetStreetsOfTown")]
         public async Task<IActionResult> GetStreetsOfTown([FromQuery] int id)
@@ -214,7 +211,6 @@ namespace LightOn.Controllers.Auth
         }
 
         [AllowAnonymous]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("GetBuildingsOfStreet")]
         public async Task<IActionResult> GetBuildingsOfStreet([FromQuery] int id)

@@ -24,7 +24,17 @@ builder.Host.ConfigureLogging(logging =>
     logging.AddConsole();
     logging.AddDebug();
 });
-
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyHeader()
+               .AllowAnyMethod();
+               
+        
+    });
+});
 var connectionString = builder.Configuration.GetConnectionString("LightsOnDb");
 builder.Services.AddSingleton<ILoggingService, LoggingService>();
 builder.Services.AddDbContext<ApplicationDbContext>(x => x.UseSqlServer(connectionString));
@@ -116,7 +126,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin()); // CORS POLICY
 app.UseWebSockets();
 app.Map("/ws", HandleWebSocketRequest);
 
