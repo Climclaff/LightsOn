@@ -2,8 +2,12 @@
 using LightOn.Helpers;
 using LightOn.Models;
 using LightOn.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Xml.Linq;
 
 namespace LightOn.Controllers
@@ -13,12 +17,13 @@ namespace LightOn.Controllers
     public class ApplianceUsageController : ControllerBase
     {
         private readonly IApplianceUsageService _service;
-
-        public ApplianceUsageController(IApplianceUsageService applianceUsageService)
+        private readonly UserManager<User> _userManager;
+        public ApplianceUsageController(IApplianceUsageService applianceUsageService, UserManager<User> userManager)
         {
             _service = applianceUsageService;
+            _userManager = userManager;
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpPost]
         [Route("Delete")]
         public async Task<IActionResult> Delete([FromQuery] int id)
@@ -34,6 +39,7 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpPost]
         [Route("Create")]
         public async Task<IActionResult> Create([FromBody] ApplianceUsageHistory usageHistory)
@@ -45,6 +51,7 @@ namespace LightOn.Controllers
             }
             return BadRequest(result.ErrorMessage);
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpPost]
         [Route("Update")]
         public async Task<IActionResult> Update([FromBody] ApplianceUsageHistory usageHistory)
@@ -61,6 +68,7 @@ namespace LightOn.Controllers
             return StatusCode(500, result.ErrorMessage);
 
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpGet]
         [Route("FindById")]
         public async Task<IActionResult> FindById([FromQuery] int id)
@@ -77,7 +85,7 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpGet]
         [Route("GetRange")]
         public async Task<IActionResult> GetRangeAsync([FromQuery] int offset, int count)
@@ -93,7 +101,7 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpGet]
         [Route("GetAll")]
         public async Task<IActionResult> GetAllAsync()
@@ -109,11 +117,19 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("GetByUser")]
-        public async Task<IActionResult> GetByUser([FromQuery] int id)
+        public async Task<IActionResult> GetByUser()
         {
-            var result = await _service.GetByUserAsync(id);
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            var result = await _service.GetByUserAsync(user.Id);
             if (result.Success)
             {
                 if (result.Data == null)

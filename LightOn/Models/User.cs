@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace LightOn.Models
@@ -33,6 +34,7 @@ namespace LightOn.Models
 
         public int? BuildingId { get; set; }
 
+        
         [JsonIgnore]
         public Building? Building { get; set; }
 

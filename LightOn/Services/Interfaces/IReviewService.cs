@@ -9,7 +9,6 @@ namespace LightOn.Services.Interfaces
         Task<ServiceResponse<List<Review>>> GetAllAsync();
         Task<ServiceResponse<List<Review>>> GetRangeAsync(int offset, int count);
         Task<ServiceResponse<Review>> CreateAsync(Review review);
-        Task<ServiceResponse<Review>> UpdateAsync(Review review);
         Task<ServiceResponse<Review>> DeleteAsync(int id);
     }
 }

@@ -71,31 +71,6 @@ namespace LightOn.Repositories
             }
         }
 
-        public async Task<bool> UpdateAsync(Review review)
-        {
-            try
-            {
-                var result = await _context.Reviews.AsNoTracking().FirstOrDefaultAsync(current => current.Id == review.Id);
-                if (result == null)
-                {
-                    throw new NotFoundException($"Review with id {review.Id} not found.");
-                }
-                _context.Entry(review).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (NotFoundException ex)
-            {
-                _logger.LogError($"An error occurred while updating review with ID {review.Id}", ex);
-                throw new NotFoundException(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"An error occurred while updating review with ID {review.Id}", ex);
-                throw new RepositoryException($"Error updating review with ID {review.Id}", ex);
-            }
-        }
-
         public async Task<List<Review>> GetRangeAsync(int offset, int count)
         {
             var totalReviews = await _context.Reviews.CountAsync();

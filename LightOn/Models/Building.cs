@@ -21,6 +21,6 @@ namespace LightOn.Models
         public Transformer? Transformer { get; set; }
 
         [JsonIgnore]
-        public ICollection<User>? Users { get; set; }
+        public User? User { get; set; }
     }
 }

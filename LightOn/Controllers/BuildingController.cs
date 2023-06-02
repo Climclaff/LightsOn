@@ -1,12 +1,15 @@
 ﻿using LightOn.Helpers;
 using LightOn.Models;
 using LightOn.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LightOn.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
     [ApiController]
     public class BuildingController : ControllerBase
     {

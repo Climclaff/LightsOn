@@ -17,6 +17,6 @@ namespace LightOn.Repositories.Interfaces
         Task<List<Street>> GetStreetsOfTownAsync(int id);
         Task<List<Building>> GetBuildingsOfStreetAsync(int id);
 
-
+        Task<Building> GetUserBuilding(int id);
     }
 }

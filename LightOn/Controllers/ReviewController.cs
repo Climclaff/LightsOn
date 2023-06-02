@@ -1,8 +1,12 @@
 ﻿using LightOn.Helpers;
 using LightOn.Models;
 using LightOn.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LightOn.Controllers
 {
@@ -11,27 +15,59 @@ namespace LightOn.Controllers
     public class ReviewController : ControllerBase
     {
         private readonly IReviewService _service;
-
-        public ReviewController(IReviewService reviewService)
+        private readonly UserManager<User> _userManager;
+        public ReviewController(IReviewService reviewService, UserManager<User> userManager)
         {
             _service = reviewService;
+            _userManager = userManager;
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         [Route("Delete")]
         public async Task<IActionResult> Delete([FromQuery] int id)
         {
-            ServiceResponse<Review> result = await _service.DeleteAsync(id);
-            if (result.NotFound)
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.FindByNameAsync(username);
+            bool isAdmin = false;
+            bool isOwner = false;
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            ServiceResponse<Review> review = await _service.GetByIdAsync(id);
+            if(review.Data == null)
             {
                 return NotFound();
             }
-            if (result.Success)
-            {
-                return Ok();
+            IList<Claim> claims = await _userManager.GetClaimsAsync(user);
+            if (claims.Count > 0) {
+                if (claims.First().Type.ToString() == "IsAdmin" && claims.First().Value.ToString() == "true")
+                {
+                    isAdmin = true;
+                }
             }
-            return StatusCode(500, result.ErrorMessage);
+            if(review.Data.UserId == user.Id)
+            {
+                isOwner= true;
+            }
+            
+            if (isAdmin == true || isOwner == true)
+            {
+                ServiceResponse<Review> result = await _service.DeleteAsync(id);
+                if (result.NotFound)
+                {
+                    return NotFound();
+                }
+                if (result.Success)
+                {
+                    return Ok();
+                }
+                return StatusCode(500, result.ErrorMessage);
+            }
+            return StatusCode(401, "You don't have access to delete this.");
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         [Route("Create")]
         public async Task<IActionResult> Create([FromBody] Review review)
@@ -43,22 +79,7 @@ namespace LightOn.Controllers
             }
             return BadRequest(result.ErrorMessage);
         }
-        [HttpPost]
-        [Route("Update")]
-        public async Task<IActionResult> Update([FromBody] Review review)
-        {
-            ServiceResponse<Review> result = await _service.UpdateAsync(review);
-            if (result.NotFound)
-            {
-                return NotFound();
-            }
-            if (result.Success)
-            {
-                return Ok();
-            }
-            return StatusCode(500, result.ErrorMessage);
-
-        }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpGet]
         [Route("FindById")]
         public async Task<IActionResult> FindById([FromQuery] int id)
@@ -75,7 +96,7 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpGet]
         [Route("GetRange")]
         public async Task<IActionResult> GetRangeAsync([FromQuery] int offset, int count)
@@ -91,7 +112,7 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpGet]
         [Route("GetAll")]
         public async Task<IActionResult> GetAllAsync()

@@ -75,22 +75,7 @@ namespace LightOn.Services
             }
         }
 
-        public async Task<ServiceResponse<Review>> UpdateAsync(Review review)
-        {
-            try
-            {
-                await _repository.UpdateAsync(review);
-                return new ServiceResponse<Review> { Success = true };
-            }
-            catch (NotFoundException ex)
-            {
-                return new ServiceResponse<Review> { Success = false, NotFound = true, ErrorMessage = ex.Message };
-            }
-            catch (Exception ex)
-            {
-                return new ServiceResponse<Review> { Success = false, ErrorMessage = ex.Message };
-            }
-        }
+
 
         public async Task<ServiceResponse<List<Review>>> GetRangeAsync(int offset, int count)
         {

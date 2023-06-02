@@ -3,6 +3,8 @@ using LightOn.Helpers;
 using LightOn.Models;
 using LightOn.Repositories;
 using LightOn.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +14,7 @@ using System.Xml.Linq;
 namespace LightOn.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
     [ApiController]
     public class RegionController : ControllerBase
     {

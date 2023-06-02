@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-# pragma warning disable CS8601
+# pragma warning disable CS8601, CS8602
 namespace LightOn.Controllers
 {
     [Route("api/[controller]")]
@@ -125,14 +125,22 @@ namespace LightOn.Controllers
         [Route("GetBuildingsOfStreet")]
         public async Task<IActionResult> GetBuildingsOfStreet([FromQuery] int id)
         {
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return BadRequest();
+            }
             var result = await _profileService.GetBuildingsOfStreetAsync(id);
-
+            var currentUserBuilding = await _profileService.GetUserBuilding(user.Id);
+            
             if (result.NotFound)
             {
                 return NotFound();
             }
             if (result.Success)
             {
+                result.Data.Add(currentUserBuilding.Data);
                 return Ok(result.Data);
             }
             return StatusCode(500, result.ErrorMessage);

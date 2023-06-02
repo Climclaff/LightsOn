@@ -10,6 +10,11 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using LightOn.BLL;
 using LightOn.Data;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Collections;
+using System.Text;
+using System.Collections.Concurrent;
+using System.Text.Json;
 
 namespace LightOn.Controllers
 {
@@ -17,26 +22,40 @@ namespace LightOn.Controllers
     [ApiController]
     public class PlanningPageController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        public PlanningPageController(ApplicationDbContext dbContext)
+        private readonly IDistributedCache _cache;
+        private readonly UserManager<User> _userManager;
+        private readonly IPlanningPageService _service;
+        public PlanningPageController(IDistributedCache cache, IPlanningPageService service, UserManager<User> userManager)
         {
-            _context = dbContext;
+            _cache = cache;
+            _userManager = userManager;
+            _service = service;
         }
 
-       
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
-        [Route("TestLoad")]
-        public async Task<IActionResult> TestLoad()
+        [Route("GetLoadInfo")]
+        public async Task<IActionResult> GetLoadInfo()
         {
-            TransformerLoadCalculator calculator = new TransformerLoadCalculator();
-            var transf = await _context.Transformers.FindAsync(1);
-            List<ApplianceUsagePlanned> applianceUsageForTransformer = _context.ApplianceUsagePlanneds
-                .Where(u => u.Appliance.User.Building.TransformerId == transf.Id)
-                .ToList();
-            List<int?> applianceIds = applianceUsageForTransformer.Select(u => u.ApplianceId).ToList();
-            List<Appliance> appliancesUsed = await _context.Appliances.Where(a => applianceIds.Contains(a.Id)).ToListAsync();
-            var result = calculator.GenerateSegments(transf, applianceUsageForTransformer, appliancesUsed);
-            return Ok(result);
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            var result = await _service.GetTransformerByUserAsync(user.Id);
+            var dictionaryByteArray = await _cache.GetAsync(result.Data.ToString() + "Planning");
+            if (dictionaryByteArray != null)
+            {
+                string json = Encoding.UTF8.GetString(dictionaryByteArray);
+                ConcurrentDictionary<DateTime, float> dictionary = JsonSerializer.Deserialize<ConcurrentDictionary<DateTime, float>>(json);
+                return Ok(dictionary);
+            }
+            else
+            {
+                return StatusCode(500, "No transformer information available.");
+            }
         }
     }
 }

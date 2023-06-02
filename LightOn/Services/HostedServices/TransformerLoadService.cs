@@ -12,13 +12,14 @@ using System.Net.WebSockets;
 using System.Text.Json;
 using System.Text;
 using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Caching.Distributed;
 #pragma warning disable 8602
 namespace LightOn.Services.HostedServices
 {
-    public class PlanningPageService : BackgroundService
+    public class TransformerLoadService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
-        public PlanningPageService(IServiceProvider serviceProvider)
+        public TransformerLoadService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
@@ -30,7 +31,8 @@ namespace LightOn.Services.HostedServices
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    await CalculateTransformerLoad(context);
+                    var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
+                    await CalculateTransformerLoad(context, cache);
 
                     await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
                 }
@@ -47,7 +49,7 @@ namespace LightOn.Services.HostedServices
                 throw new Exception($"Failed to send simulation data to transformer with id {id}");
             }
         }
-        public async Task CalculateTransformerLoad(ApplicationDbContext _context)
+        public async Task CalculateTransformerLoad(ApplicationDbContext _context, IDistributedCache cache)
         {
             try
             {
@@ -59,8 +61,16 @@ namespace LightOn.Services.HostedServices
                     .ToListAsync();
                     List<int?> applianceIds = applianceUsageForTransformer.Select(u => u.ApplianceId).ToList();
                     List<Appliance> appliancesUsed = await _context.Appliances.Where(a => applianceIds.Contains(a.Id)).ToListAsync();
-
                     var dictionary = calculator.GenerateSegments(transf, applianceUsageForTransformer, appliancesUsed);
+
+
+                    var cacheEntryOptions = new DistributedCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromSeconds(900));
+                    string jsonDictionary = JsonSerializer.Serialize(dictionary);
+                    byte[] byteArray = Encoding.UTF8.GetBytes(jsonDictionary);
+                    await cache.SetAsync(transf.Id.ToString() + "Planning", byteArray, cacheEntryOptions);
+                    
+
                     KeyValuePair<DateTime, float> earliestEntry = dictionary.OrderBy(entry => entry.Key).FirstOrDefault();
                     if (earliestEntry.Key != default)
                     {

@@ -135,7 +135,7 @@ namespace LightOn.Repositories
                 {
                     throw new NotFoundException($"Street with id {id} not found.");
                 }
-                return await _context.Buildings.Where(u => u.StreetId == id).ToListAsync();
+                return await _context.Buildings.Where(u => u.StreetId == id && u.User == null).ToListAsync();
             }
             catch (NotFoundException ex)
             {
@@ -207,6 +207,29 @@ namespace LightOn.Repositories
             {
                 _logger.LogError("Failed to change building area", ex);
                 throw new RepositoryException("Failed to change building area", ex);
+            }
+        }
+
+        public async Task<Building> GetUserBuilding(int id)
+        {
+            try
+            {
+                var user = await _context.Users.FindAsync(id);
+                if (user == null)
+                {
+                    throw new NotFoundException($"User with id {id} not found.");
+                }
+                return await _context.Buildings.Where(u => u.Id == user.BuildingId).FirstAsync();
+            }
+            catch (NotFoundException ex)
+            {
+                _logger.LogError($"An error occurred while finding user with ID {id}", ex);
+                throw new NotFoundException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while retrieving building of user with ID {id}", ex);
+                throw new RepositoryException($"Error retrieving building of user with ID {id}", ex);
             }
         }
 

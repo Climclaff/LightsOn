@@ -16,6 +16,6 @@ namespace LightOn.Services.Interfaces
         Task<ServiceResponse<List<Street>>> GetStreetsOfTownAsync(int id);
         Task<ServiceResponse<List<Building>>> GetBuildingsOfStreetAsync(int id);
 
-        
+        Task<ServiceResponse<Building>> GetUserBuilding(int id);
     }
 }

@@ -28,10 +28,10 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.AllowAnyOrigin()
+        builder.WithOrigins("https://7f46-91-215-145-52.ngrok-free.app", "https://localhost:5001", "http://localhost:3000")
+               .AllowAnyMethod()
                .AllowAnyHeader()
-               .AllowAnyMethod();
-               
+               .AllowCredentials();
         
     });
 });
@@ -94,6 +94,7 @@ builder.Services.AddScoped<ITransformerMeasurementRepository, TransformerMeasure
 builder.Services.AddScoped<ITransformerRepository, TransformerRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
+builder.Services.AddScoped<IPlanningPageRepository, PlanningPageRepository>();
 
 builder.Services.AddScoped<IApplianceService, ApplianceService>();
 builder.Services.AddScoped<IApplianceUsageService, ApplianceUsageService>();
@@ -108,9 +109,9 @@ builder.Services.AddScoped<ITransformerMeasurementService, TransformerMeasuremen
 builder.Services.AddScoped<ITransformerService, TransformerService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IPlanningPageService, PlanningPageService>();
 
-
-builder.Services.AddHostedService<PlanningPageService>(); //TURN ON WEBSOCKET COMMUNICATION HERE
+//builder.Services.AddHostedService<TransformerLoadService>(); //TURN ON WEBSOCKET COMMUNICATION HERE
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -126,7 +127,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin()); // CORS POLICY
+app.UseCors(); // CORS POLICY
 app.UseWebSockets();
 app.Map("/ws", HandleWebSocketRequest);
 

@@ -53,7 +53,12 @@ namespace LightOn.Controllers.Auth
                 UserName = model.Email,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                SecurityStamp = Guid.NewGuid().ToString(),
+                RegionId = model.RegionId,
+                DistrictId = model.DistrictId,
+                TownId = model.TownId,
+                StreetId = model.StreetId,
+                BuildingId = model.BuildingId,
+                SecurityStamp = Guid.NewGuid().ToString()
             };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
@@ -91,52 +96,25 @@ namespace LightOn.Controllers.Auth
                     expires: DateTime.Now.AddHours(3),
                     claims: authClaims,
                     signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
+                if(authClaims.Count > 0)
+                {
+                    if (authClaims.First().Value == "true")
+                    return Ok(new
+                    {
+                        token = new JwtSecurityTokenHandler().WriteToken(token),
+                        isAdmin = true
+                    });
+                }
+
                 return Ok(new
                 {
                     token = new JwtSecurityTokenHandler().WriteToken(token),
-                    user = user.Id
-                }
-                    );
+                    isAdmin = false
+                }) ;
             }
             return Unauthorized();
         }
-        /*
-                [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-                [HttpPost]
-                [Route("AutoLogin")]
-                public async Task<IActionResult> AutoLogin()
-                {
-                    var name = User.FindFirst(ClaimTypes.Name)?.Value;
-                    var curUser = await _userManager.FindByNameAsync(name);
-                    if (curUser != null)
-                    {
-                        var userRoles = await _userManager.GetRolesAsync(curUser);
-                        var authClaims = new List<Claim>
-                         {
-                             new Claim(ClaimTypes.Name, curUser.UserName),
-                             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                         };
-                        foreach (var userRole in userRoles)
-                        {
-                            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-                        }
-
-                        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-                        var token = new JwtSecurityToken(
-                            issuer: _configuration["JWT:ValidIssuer"],
-                            audience: _configuration["JWT:ValidAudience"],
-                            expires: DateTime.Now.AddHours(3),
-                             claims: authClaims,
-                            signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
-                        return Ok(new
-                        {
-                            token = new JwtSecurityTokenHandler().WriteToken(token),
-                            user = curUser.UserName
-                        });
-                    }
-                    return Unauthorized();
-                }
-        */
+        
 
         [AllowAnonymous]
         [HttpGet]
@@ -229,12 +207,5 @@ namespace LightOn.Controllers.Auth
         }
 
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
-        [HttpPost]
-        [Route("Test")]
-        public async Task<IActionResult> Test()
-        {
-            return Ok();
-        }
     }
 }

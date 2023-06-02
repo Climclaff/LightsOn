@@ -178,5 +178,26 @@ namespace LightOn.Services
                 return new ServiceResponse<List<Town>> { Success = false, ErrorMessage = ex.Message };
             }
         }
+
+        public async Task<ServiceResponse<Building>> GetUserBuilding(int id)
+        {
+            try
+            {
+                var result = await _repository.GetUserBuilding(id);
+                if (result == null)
+                {
+                    return new ServiceResponse<Building> { Success = false, ErrorMessage = $"Building for user with ID {id} was not found", NotFound = true };
+                }
+                return new ServiceResponse<Building> { Success = true, Data = result };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<Building> { Success = false, ErrorMessage = ex.Message, NotFound = true };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<Building> { Success = false, ErrorMessage = ex.Message };
+            }
+        }
     }
 }
