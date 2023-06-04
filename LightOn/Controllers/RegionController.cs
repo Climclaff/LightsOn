@@ -14,7 +14,6 @@ using System.Xml.Linq;
 namespace LightOn.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
     [ApiController]
     public class RegionController : ControllerBase
     {
@@ -25,6 +24,7 @@ namespace LightOn.Controllers
             _service = regionService;
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpPost]
         [Route("Delete")]
         public async Task<IActionResult> Delete([FromQuery] int id)
@@ -40,6 +40,7 @@ namespace LightOn.Controllers
             }          
             return StatusCode(500, result.ErrorMessage);
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpPost]
         [Route("Create")]
         public async Task<IActionResult> Create([FromBody] Region region)
@@ -51,6 +52,7 @@ namespace LightOn.Controllers
             }
             return BadRequest(result.ErrorMessage);
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpPost]
         [Route("Update")]
         public async Task<IActionResult> Update([FromBody] Region region)
@@ -67,6 +69,7 @@ namespace LightOn.Controllers
             return StatusCode(500, result.ErrorMessage);
 
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("FindById")]
         public async Task<IActionResult> FindById([FromQuery] int id)
@@ -84,6 +87,7 @@ namespace LightOn.Controllers
             return StatusCode(500, result.ErrorMessage);
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpGet]
         [Route("GetRange")]
         public async Task<IActionResult> GetRangeAsync([FromQuery] int offset, int count)
@@ -99,7 +103,7 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [HttpGet]
         [Route("GetAll")]
         public async Task<IActionResult> GetAllAsync()

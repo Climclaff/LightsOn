@@ -15,7 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Net.WebSockets;
 using System.Text;
-
+    
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.ConfigureLogging(logging =>
@@ -28,7 +28,12 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("https://7f46-91-215-145-52.ngrok-free.app", "https://localhost:5001", "http://localhost:3000")
+        builder.WithOrigins(
+            "https://dcc7-91-215-144-179.ngrok-free.app", 
+            "https://localhost:5001",
+            "http://localhost:3000",
+            "https://localhost:7014",
+            "https://accounts.google.com")
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowCredentials();
@@ -60,13 +65,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
              ClockSkew = TimeSpan.FromMinutes(10),
              IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JWT:Secret").Value))
          };
-     });
-     /*
+     })
+     
      .AddGoogle(googleOptions =>
      {
          googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
          googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-     });*/
+     });
 
 
 builder.Services.AddAuthorization(options =>
@@ -95,6 +100,7 @@ builder.Services.AddScoped<ITransformerRepository, TransformerRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddScoped<IPlanningPageRepository, PlanningPageRepository>();
+builder.Services.AddScoped<IAdviceRepository, AdviceRepository>();
 
 builder.Services.AddScoped<IApplianceService, ApplianceService>();
 builder.Services.AddScoped<IApplianceUsageService, ApplianceUsageService>();
@@ -110,6 +116,7 @@ builder.Services.AddScoped<ITransformerService, TransformerService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IPlanningPageService, PlanningPageService>();
+builder.Services.AddScoped<IAdviceService, AdviceService>();
 
 //builder.Services.AddHostedService<TransformerLoadService>(); //TURN ON WEBSOCKET COMMUNICATION HERE
 var app = builder.Build();

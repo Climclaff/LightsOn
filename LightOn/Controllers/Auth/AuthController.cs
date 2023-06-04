@@ -1,6 +1,8 @@
 ﻿using LightOn.Models;
 using LightOn.Models.Auth;
 using LightOn.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -109,7 +111,8 @@ namespace LightOn.Controllers.Auth
                 return Ok(new
                 {
                     token = new JwtSecurityTokenHandler().WriteToken(token),
-                    isAdmin = false
+                    isAdmin = false,
+                    userId = user.Id
                 }) ;
             }
             return Unauthorized();
@@ -206,6 +209,119 @@ namespace LightOn.Controllers.Auth
             return StatusCode(500, result.ErrorMessage);
         }
 
+
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("ExternalLoginCallBack")]
+        public async Task<IActionResult> ExternalLoginCallback()
+        {
+            var info = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            var firstName = info.Principal.FindFirstValue(ClaimTypes.GivenName);
+            var lastName = info.Principal.FindFirstValue(ClaimTypes.Surname);
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user != null)
+            {
+                var databaseClaims = await _userManager.GetClaimsAsync(user);
+                var authClaims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+
+                };
+                for (int i = 0; i < databaseClaims.Count; i++)
+                {
+                    authClaims.Add(databaseClaims[i]);
+                }
+                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["JWT:ValidIssuer"],
+                    audience: _configuration["JWT:ValidAudience"],
+                    expires: DateTime.Now.AddHours(3),
+                    claims: authClaims,
+                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
+                if (authClaims.Count > 0)
+                {
+                    if (authClaims.First().Value == "true")
+                        return Ok(new
+                        {
+                            token = new JwtSecurityTokenHandler().WriteToken(token),
+                            isAdmin = true
+                        });
+                }
+
+                return Ok(new
+                {
+                    token = new JwtSecurityTokenHandler().WriteToken(token),
+                    isAdmin = false
+                });
+            }
+
+            // Create a new user with the necessary information
+            var newUser = new User
+            {
+                UserName = email,
+                Email = email,
+                FirstName = firstName,
+                LastName = lastName
+            };
+
+            return Ok(newUser);
+        }
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("GoogleLogin")]
+        public IActionResult GoogleLogin()
+        {
+
+            var authenticationProperties = new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("ExternalLoginCallback", "Auth")
+            };
+
+
+            return Challenge(authenticationProperties, GoogleDefaults.AuthenticationScheme);
+        }
+        [AllowAnonymous]
+        [HttpPost]
+        [Route("CompleteGoogleRegister")]
+        public async Task<IActionResult> CompleteGoogleRegister([FromBody] GoogleRegisterModel model)
+        {
+            var userExists = await _userManager.FindByNameAsync(model.Email);
+            if (userExists != null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                { Status = "Error", Message = "User already exists" });
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(
+                new ValidationProblemDetails(ModelState));
+            }
+            User user = new User()
+            {
+                Email = model.Email,
+                UserName = model.Email,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                RegionId = model.RegionId,
+                DistrictId = model.DistrictId,
+                TownId = model.TownId,
+                StreetId = model.StreetId,
+                BuildingId = model.BuildingId,
+                SecurityStamp = Guid.NewGuid().ToString()
+            };
+            var result = await _userManager.CreateAsync(user);
+            if (!result.Succeeded)
+            {
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, new
+                { Status = "Something went wrong", Message = "Make sure the password contains numbers, upper and lower case letters, special symbols" });
+            }
+            await _userManager.AddClaimAsync(user, new Claim("IsAdmin", "false"));
+            return Ok(new { Status = "Success", Message = "User created" });
+        }
 
     }
 }

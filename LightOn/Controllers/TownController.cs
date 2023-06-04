@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace LightOn.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
     [ApiController]
     public class TownController : ControllerBase
     {
@@ -21,6 +20,7 @@ namespace LightOn.Controllers
         }
 
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [Route("Delete")]
         public async Task<IActionResult> Delete([FromQuery] int id)
         {
@@ -36,6 +36,7 @@ namespace LightOn.Controllers
             return StatusCode(500, result.ErrorMessage);
         }
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [Route("Create")]
         public async Task<IActionResult> Create([FromBody] Town town)
         {
@@ -47,6 +48,7 @@ namespace LightOn.Controllers
             return BadRequest(result.ErrorMessage);
         }
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [Route("Update")]
         public async Task<IActionResult> Update([FromBody] Town town)
         {
@@ -62,6 +64,7 @@ namespace LightOn.Controllers
             return StatusCode(500, result.ErrorMessage);
 
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("FindById")]
         public async Task<IActionResult> FindById([FromQuery] int id)
@@ -80,6 +83,7 @@ namespace LightOn.Controllers
         }
 
         [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [Route("GetRange")]
         public async Task<IActionResult> GetRangeAsync([FromQuery] int offset, int count)
         {
@@ -96,6 +100,7 @@ namespace LightOn.Controllers
         }
 
         [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
         [Route("GetAll")]
         public async Task<IActionResult> GetAllAsync()
         {

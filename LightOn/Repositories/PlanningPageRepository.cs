@@ -17,6 +17,7 @@ namespace LightOn.Repositories
             _context = context;
             _logger = logger;
         }
+
         public async Task<int?> GetTransformerByUserAsync(int id)
         {
             var user = await _context.Users.FindAsync(id);

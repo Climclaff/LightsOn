@@ -20,6 +20,7 @@ namespace LightOn.Controllers
             _service = userService;
         }
 
+
         [HttpPost]
         [Route("Delete")]
         public async Task<IActionResult> Delete([FromQuery] int id)

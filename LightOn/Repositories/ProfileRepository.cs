@@ -17,6 +17,8 @@ namespace LightOn.Repositories
             _context = context;
             _logger = logger;
         }
+
+        
         public async Task<bool> ChangeLocationAsync(int userId, int regionId, int districtId, int townId, int streetId, int buildingId)
         {
             try

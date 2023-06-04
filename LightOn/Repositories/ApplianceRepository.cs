@@ -57,7 +57,8 @@ namespace LightOn.Repositories
                     Power= a.Power,
                     PowerFactor= a.PowerFactor,
                     Amperage= a.Amperage,
-                    UserId= a.UserId
+                    UserId= a.UserId,
+                    imageIndex = a.imageIndex
                 }).ToListAsync();
             }
             catch (Exception ex)
