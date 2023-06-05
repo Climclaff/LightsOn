@@ -37,5 +37,17 @@ namespace LightOn.Repositories
             }
 
         }
+
+        public async Task<float> GetTransformerLoad(int id)
+        {
+            var measurement = await _context.TransformerMeasurements.Where(tr => tr.TransformerId == id).OrderByDescending(m => m.Date)
+                .FirstOrDefaultAsync(); 
+            if (measurement == null)
+            {
+                throw new NotFoundException($"Measurement for transformer with id {id} not found.");
+            }               
+                return measurement.CurrentLoad;            
+        }
+
     }
 }

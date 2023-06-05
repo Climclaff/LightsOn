@@ -1,5 +1,6 @@
 ﻿using LightOn.Models;
 using System.Collections.Concurrent;
+using System.Linq;
 //#pragma warning disable 8618, 8602, 8629
 namespace LightOn.BLL
 {
@@ -12,42 +13,51 @@ namespace LightOn.BLL
 
             public double Score { get; set; }
         }
-
+        public TimeSpan PeakLoadHour { get; set; }
 
         public ConcurrentDictionary<string, List<string>> GenerateEnergyEfficiencyTips(User user, ConcurrentDictionary<User, List<ApplianceUsageHistory>> usages, List<Building> buildings)
         {
-            ConcurrentDictionary<string, List<string>> tips = new ConcurrentDictionary<string, List<string>>();
-
-            // Calculate user's energy consumption per square foot
-            double userEnergyConsumptionPerSquareFoot = CalculateEnergyConsumptionPerSquareFoot(user, usages, buildings);
-            double averageEnergyConsumptionPerSquareFoot = CalculateAverageEnergyConsumptionPerSquareFoot(usages, buildings);
-
-            // Compare user's energy consumption per square foot with the average
-            if (userEnergyConsumptionPerSquareFoot > averageEnergyConsumptionPerSquareFoot)
+            try
             {
-                tips.TryAdd("EnergyConsumption", new List<string> { "Your energy consumption per square foot is higher than the average. Consider taking steps to improve energy efficiency." });
-            }
-            else
-            {
-                tips.TryAdd("EnergyConsumption", new List<string> { "Your energy consumption per square foot is within the average range. Keep up the good work!" });
-            }
+                ConcurrentDictionary<string, List<string>> tips = new ConcurrentDictionary<string, List<string>>();
 
-            // Identify heaviest appliance usages
-            List<ApplianceUsageHistory> heaviestUsages = GetHeaviestApplianceUsages(usages);
-            if (heaviestUsages.Any())
-            {
-                List<string> applianceTips = new List<string>();
+                // Calculate user's energy consumption per square foot
+                double userEnergyConsumptionPerSquareFoot = CalculateEnergyConsumptionPerSquareFoot(user, usages, buildings);
+                double averageEnergyConsumptionPerSquareFoot = CalculateAverageEnergyConsumptionPerSquareFoot(usages, buildings);
 
-                foreach (var usage in heaviestUsages)
+                // Compare user's energy consumption per square foot with the average
+                if (userEnergyConsumptionPerSquareFoot > averageEnergyConsumptionPerSquareFoot)
                 {
-                    string tip = $"Reduce usage of {usage.ApplianceId} during peak energy demand hours.";
-                    applianceTips.Add(tip);
+                    tips.TryAdd("EnergyConsumption", new List<string> { $"Your energy consumption per square foot is " +
+                        $"{((userEnergyConsumptionPerSquareFoot-averageEnergyConsumptionPerSquareFoot)/averageEnergyConsumptionPerSquareFoot)*100} " +
+                        $"% higher than the average. Consider taking steps to improve energy efficiency." });
+                }
+                else
+                {
+                    tips.TryAdd("EnergyConsumption", new List<string> { "Your energy consumption per square foot is within the average range. Keep up the good work!" });
+                }
+                SetPeakUsageTime(usages);
+                // Identify heaviest appliance usages
+                List<ApplianceUsageHistory> heaviestUsages = GetHeaviestApplianceUsages(usages);
+                if (heaviestUsages.Any())
+                {
+                    List<string> applianceTips = new List<string>();
+
+                    foreach (var usage in heaviestUsages)
+                    {
+                        string tip = $"Reduce usage of {usage.ApplianceId} during peak energy demand hours.";
+                        applianceTips.Add(tip);
+                    }
+
+                    tips.TryAdd("ApplianceUsage", applianceTips);
                 }
 
-                tips.TryAdd("ApplianceUsage", applianceTips);
+                return tips;
             }
-
-            return tips;
+            catch (Exception)
+            {
+                throw new Exception("An error occured during generating tips. The data provided to the system is insufficient for generation");
+            }
         }
 
         public double CalculateEnergyConsumptionPerSquareFoot(User user, ConcurrentDictionary<User, List<ApplianceUsageHistory>> usages, List<Building> buildings)
@@ -94,16 +104,18 @@ namespace LightOn.BLL
             double normalizedEnergyConsumption = usage.EnergyConsumed / maximumEnergyConsumption;
             double normalizedUsageDuration = (usage.UsageEndDate-usage.UsageStartDate).TotalMinutes / maximumUsageDuration;
 
+
+
             // Check if the appliance usage occurred during the peak load time
-            // bool isDuringPeakLoadTime = usage.Timestamp.TimeOfDay >= peakLoadTime && usage.Timestamp.TimeOfDay <= peakLoadTimeEnd;
+            bool isDuringPeakLoadTime = usage.UsageStartDate.TimeOfDay >= PeakLoadHour && usage.UsageEndDate.TimeOfDay <= PeakLoadHour.Add(TimeSpan.FromHours(1));
 
             // Assign a weight to the appliance usage based on its impact during peak load time
-            // double peakUsageFactor = isDuringPeakLoadTime ? peakUsageWeight : 0;
+            double peakUsageFactor = isDuringPeakLoadTime ? peakUsageWeight : 0;
 
             // Calculate the score by applying the weights to the normalized values
             double score = (energyWeight * normalizedEnergyConsumption) +
-                           (durationWeight * normalizedUsageDuration); 
-     //                      + peakUsageFactor;
+                           (durationWeight * normalizedUsageDuration) + 
+                            peakUsageFactor;
 
             return score;
         }
@@ -125,6 +137,22 @@ namespace LightOn.BLL
             }
 
             return totalEnergyConsumption / totalSquareFootage;
+        }
+
+        private void SetPeakUsageTime(ConcurrentDictionary<User, List<ApplianceUsageHistory>> usages)
+        {
+            var peakHourGroups = usages.SelectMany(u => u.Value)
+                                       .GroupBy(u => u.UsageStartDate.Hour)
+                                       .OrderByDescending(g => g.Sum(u => u.EnergyConsumed));
+
+            var peakHourGroup = peakHourGroups.FirstOrDefault();
+
+            if (peakHourGroup != null)
+            {
+                PeakLoadHour = TimeSpan.FromHours(peakHourGroup.Key);
+            }
+
+            PeakLoadHour = TimeSpan.FromHours(18); // Default peak hour (6 PM)
         }
     }
 }

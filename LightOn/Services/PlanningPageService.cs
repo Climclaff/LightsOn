@@ -3,6 +3,7 @@ using LightOn.Helpers;
 using LightOn.Models;
 using LightOn.Repositories.Interfaces;
 using LightOn.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace LightOn.Services
 {
@@ -34,6 +35,26 @@ namespace LightOn.Services
             catch (Exception ex)
             {
                 return new ServiceResponse<int?> { Success = false, ErrorMessage = ex.Message };
+            }
+        }
+        public async Task<ServiceResponse<float>> GetTransformerLoad(int id)
+        {
+            try
+            {
+                var result = await _repository.GetTransformerLoad(id);
+                if (result == null)
+                {
+                    return new ServiceResponse<float> { Success = false, ErrorMessage = $"Measurements for transformer with ID {id} was not found", NotFound = true };
+                }
+                return new ServiceResponse<float> { Success = true, Data = result };
+            }
+            catch (NotFoundException ex)
+            {
+                return new ServiceResponse<float> { Success = false, ErrorMessage = ex.Message, NotFound = true };
+            }
+            catch (Exception ex)
+            {
+                return new ServiceResponse<float> { Success = false, ErrorMessage = ex.Message };
             }
         }
     }

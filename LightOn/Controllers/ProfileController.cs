@@ -195,7 +195,7 @@ namespace LightOn.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         [Route("ChangeImage")]
-        public async Task<IActionResult> ChangeImage(byte[] imgData)
+        public async Task<IActionResult> ChangeImage([FromBody] ImageModel model)
         {
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
             var user = await _userManager.FindByNameAsync(username);
@@ -203,6 +203,7 @@ namespace LightOn.Controllers
             {
                 return BadRequest();
             }
+            byte[] imgData = Convert.FromBase64String(model.ByteArray);
             var result = await _profileService.ChangeImageAsync(user.Id, imgData);
             if (result.NotFound)
             {
@@ -265,5 +266,10 @@ namespace LightOn.Controllers
             }
             return StatusCode(500, result.ErrorMessage);
         }
+    }
+
+    public class ImageModel
+    {
+        public string ByteArray { get; set; }
     }
 }

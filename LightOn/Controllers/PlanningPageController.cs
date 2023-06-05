@@ -45,12 +45,20 @@ namespace LightOn.Controllers
                 return BadRequest();
             }
             var result = await _service.GetTransformerByUserAsync(user.Id);
+            if (result.Data== null)
+            {
+                return BadRequest();
+            }
             var dictionaryByteArray = await _cache.GetAsync(result.Data.ToString() + "Planning");
             if (dictionaryByteArray != null)
             {
                 string json = Encoding.UTF8.GetString(dictionaryByteArray);
                 ConcurrentDictionary<DateTime, float> dictionary = JsonSerializer.Deserialize<ConcurrentDictionary<DateTime, float>>(json);
-                return Ok(dictionary);
+                var currentLoad = await _service.GetTransformerLoad((int)result.Data);
+                return Ok(new {
+                    dict = dictionary,
+                    currTransfLoad = currentLoad
+                });
             }
             else
             {
