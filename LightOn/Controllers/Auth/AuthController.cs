@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -69,6 +70,7 @@ namespace LightOn.Controllers.Auth
                 { Status = "Something went wrong", Message = "Make sure the password contains numbers, upper and lower case letters, special symbols" });
             }
             await _userManager.AddClaimAsync(user, new Claim("IsAdmin", "false"));
+            await _userManager.AddClaimAsync(user, new Claim("IsPremium", "false"));
             return Ok(new { Status = "Success", Message = "User created" });
         }
 
@@ -100,20 +102,32 @@ namespace LightOn.Controllers.Auth
                     signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
                 if(authClaims.Count > 0)
                 {
-                    if (authClaims.First().Value == "true")
+                    var adminClaim = authClaims.Where(u => u.Type == "IsAdmin").First();
+                    var premiumClaim = authClaims.Where(u => u.Type == "IsPremium").First();
+                    DateTime dateTime;
+                    if (DateTime.TryParse(premiumClaim.Value, out dateTime))
+                    {
+                        
+                        if (dateTime > DateTime.Now)
+                        {
+                            var newPremiumClaim = new Claim("IsPremium", "false");
+                            await _userManager.ReplaceClaimAsync(user, premiumClaim, newPremiumClaim);
+                            return Ok(new
+                            {
+                                token = new JwtSecurityTokenHandler().WriteToken(token),
+                                isAdmin = adminClaim.Value,
+                                isPremium = newPremiumClaim.Value
+                            });
+                        }                      
+                    }
                     return Ok(new
                     {
                         token = new JwtSecurityTokenHandler().WriteToken(token),
-                        isAdmin = true
+                        isAdmin = adminClaim.Value,
+                        isPremium = premiumClaim.Value
                     });
-                }
-
-                return Ok(new
-                {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),
-                    isAdmin = false,
-                    userId = user.Id
-                }) ;
+                    }
+                
             }
             return Unauthorized();
         }

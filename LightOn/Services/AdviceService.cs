@@ -8,7 +8,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text;
 using System.Collections.Generic;
-
+#pragma warning disable 8600
 namespace LightOn.Services
 {
     public class AdviceService : IAdviceService

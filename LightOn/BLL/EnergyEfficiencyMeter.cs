@@ -1,7 +1,7 @@
 ﻿using LightOn.Models;
 using System.Collections.Concurrent;
 using System.Linq;
-//#pragma warning disable 8618, 8602, 8629
+#pragma warning disable 8618, 8602, 8629
 namespace LightOn.BLL
 {
     public class EnergyEfficiencyMeter
@@ -45,11 +45,11 @@ namespace LightOn.BLL
 
                     foreach (var usage in heaviestUsages)
                     {
-                        string tip = $"Reduce usage of {usage.ApplianceId} during peak energy demand hours.";
+                        string tip = $"{usage.ApplianceId}";
                         applianceTips.Add(tip);
                     }
 
-                    tips.TryAdd("ApplianceUsage", applianceTips);
+                    tips.TryAdd("ReduceApplianceUsage", applianceTips);
                 }
 
                 return tips;
@@ -60,7 +60,7 @@ namespace LightOn.BLL
             }
         }
 
-        public double CalculateEnergyConsumptionPerSquareFoot(User user, ConcurrentDictionary<User, List<ApplianceUsageHistory>> usages, List<Building> buildings)
+        private double CalculateEnergyConsumptionPerSquareFoot(User user, ConcurrentDictionary<User, List<ApplianceUsageHistory>> usages, List<Building> buildings)
         {
             var userUsageHistory = usages[user];
             var buildingId = user.BuildingId;
@@ -120,7 +120,7 @@ namespace LightOn.BLL
             return score;
         }
 
-        public double CalculateAverageEnergyConsumptionPerSquareFoot(ConcurrentDictionary<User, List<ApplianceUsageHistory>> usages, List<Building> buildings)
+        private double CalculateAverageEnergyConsumptionPerSquareFoot(ConcurrentDictionary<User, List<ApplianceUsageHistory>> usages, List<Building> buildings)
         {
             var totalEnergyConsumption = 0.0;
             var totalSquareFootage = 0.0;

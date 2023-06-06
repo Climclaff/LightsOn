@@ -29,7 +29,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(builder =>
     {
         builder.WithOrigins(
-            "https://e4a6-91-215-144-179.ngrok-free.app", 
+            "https://2da6-91-215-144-179.ngrok-free.app", 
             "https://localhost:5001",
             "http://localhost:3000",
             "https://localhost:7014",

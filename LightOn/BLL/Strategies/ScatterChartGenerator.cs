@@ -1,11 +1,12 @@
 ﻿using LightOn.BLL.Interfaces;
 using LightOn.Models;
+using System.Collections.Concurrent;
 
 namespace LightOn.BLL.Strategies
 {
     public class ScatterChartGenerator : IChartGenerator
     {
-        public Dictionary<string, object> GenerateChart(List<ApplianceUsageHistory> usageHistory, List<Appliance>? appliances)
+        public ConcurrentDictionary<string, object> GenerateChart(List<ApplianceUsageHistory> usageHistory, List<Appliance>? appliances)
         {
             var dates = usageHistory.Select(h => h.UsageStartDate).ToList();
             var energyConsumption = usageHistory.Select(h => h.EnergyConsumed).ToList();
@@ -15,14 +16,13 @@ namespace LightOn.BLL.Strategies
             DateTime maxDate = usageHistory.Max(h => h.UsageEndDate);
             var dataPoints = dates.Zip(energyConsumption, (date, energy) => new { X = date, Y = energy }).ToList();
 
-            var chartData = new Dictionary<string, object>
-        {
-            { "minEnergyConsumed ", minEnergyConsumed },
-            { "maxEnergyConsumed ", maxEnergyConsumed },
-            { "minDate ", minDate },
-            { "maxDate ", maxDate },
-            { "data", dataPoints }
-        };
+            var chartData = new ConcurrentDictionary<string, object>();
+            chartData.TryAdd("minEnergyConsumed ", minEnergyConsumed);
+            chartData.TryAdd("maxEnergyConsumed ", maxEnergyConsumed);
+            chartData.TryAdd("minDate ", minDate);
+            chartData.TryAdd("maxDate ", maxDate);
+            chartData.TryAdd("data", dataPoints);
+            
 
             return chartData;
         }

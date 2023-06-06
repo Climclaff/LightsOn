@@ -15,7 +15,7 @@ using System.Collections;
 using System.Text;
 using System.Collections.Concurrent;
 using System.Text.Json;
-
+#pragma warning disable 8600
 namespace LightOn.Controllers
 {
     [Route("api/[controller]")]
@@ -49,17 +49,19 @@ namespace LightOn.Controllers
             {
                 return BadRequest();
             }
-            var dictionaryByteArray = await _cache.GetAsync(result.Data.ToString() + "Planning");
-            if (dictionaryByteArray != null)
-            {
-                string json = Encoding.UTF8.GetString(dictionaryByteArray);
-                ConcurrentDictionary<DateTime, float> dictionary = JsonSerializer.Deserialize<ConcurrentDictionary<DateTime, float>>(json);
-                var currentLoad = await _service.GetTransformerLoad((int)result.Data);
-                return Ok(new {
-                    dict = dictionary,
-                    currTransfLoad = currentLoad
-                });
-            }
+                var dictionaryByteArray = await _cache.GetAsync(result.Data.ToString() + "Planning");
+                if (dictionaryByteArray != null)
+                {
+
+                    string json = Encoding.UTF8.GetString(dictionaryByteArray);
+                    ConcurrentDictionary<DateTime, float> dictionary = JsonSerializer.Deserialize<ConcurrentDictionary<DateTime, float>>(json);
+                    var currentLoad = await _service.GetTransformerLoad((int)result.Data);
+                    return Ok(new
+                    {
+                        dict = dictionary,
+                        currTransfLoad = currentLoad
+                    });
+                }                      
             else
             {
                 return StatusCode(500, "No transformer information available.");

@@ -4,7 +4,7 @@ using LightOn.Models;
 using LightOn.Repositories.Interfaces;
 using LightOn.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-
+#pragma warning disable 0472
 namespace LightOn.Services
 {
     public class PlanningPageService : IPlanningPageService

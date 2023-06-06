@@ -1,11 +1,12 @@
 ﻿using LightOn.BLL.Interfaces;
 using LightOn.Models;
+using System.Collections.Concurrent;
 
 namespace LightOn.BLL.Strategies
 {
     public class HistogramChartGenerator : IChartGenerator
     { 
-        public Dictionary<string, object> GenerateChart(List<ApplianceUsageHistory> usageHistory, List<Appliance>? appliances)
+        public ConcurrentDictionary<string, object> GenerateChart(List<ApplianceUsageHistory> usageHistory, List<Appliance>? appliances)
         {
             int numBins = (int)Math.Ceiling(Math.Sqrt(usageHistory.Count));
 
@@ -37,13 +38,14 @@ namespace LightOn.BLL.Strategies
                 histogramCounts[binIndex]++;
             }
 
-            var chartData = new Dictionary<string, object>
-        {
-            { "histogramCounts", histogramCounts },
-            { "histogramRanges", histogramRanges }
-        };
+            var chartData = new ConcurrentDictionary<string, object>();
+
+            chartData.TryAdd("histogramCounts", histogramCounts);
+            chartData.TryAdd("histogramRanges", histogramRanges);
 
             return chartData;
         }
+
+
     }
 }

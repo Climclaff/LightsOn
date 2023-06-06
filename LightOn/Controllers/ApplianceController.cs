@@ -67,7 +67,7 @@ namespace LightOn.Controllers
             return StatusCode(500, result.ErrorMessage);
 
         }
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsAdminPolicy")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         [Route("FindById")]
         public async Task<IActionResult> FindById([FromQuery] int id)

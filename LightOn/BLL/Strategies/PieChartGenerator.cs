@@ -1,11 +1,12 @@
 ﻿using LightOn.BLL.Interfaces;
 using LightOn.Models;
+using System.Collections.Concurrent;
 
 namespace LightOn.BLL.Strategies
 {
     public class PieChartGenerator : IChartGenerator
     {
-        public Dictionary<string, object> GenerateChart(List<ApplianceUsageHistory> usageHistory, List<Appliance>? appliances)
+        public ConcurrentDictionary<string, object> GenerateChart(List<ApplianceUsageHistory> usageHistory, List<Appliance>? appliances)
         {
             // Group the usage history by appliance ID and calculate the total energy consumed for each appliance
             var applianceEnergy = usageHistory
@@ -17,12 +18,9 @@ namespace LightOn.BLL.Strategies
                 })
                 .ToList();
 
-            var chartData = new Dictionary<string, object>
-        {
-            { "labels", applianceEnergy.Select(a => GetApplianceName(a.ApplianceId, appliances)) },
-            { "data", applianceEnergy.Select(a => a.EnergyConsumed) }
-        };
-
+            var chartData = new ConcurrentDictionary<string, object>();
+            chartData.TryAdd("labels", applianceEnergy.Select(a => GetApplianceName(a.ApplianceId, appliances)));
+            chartData.TryAdd("data", applianceEnergy.Select(a => a.EnergyConsumed));
             return chartData;
         }
 

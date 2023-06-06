@@ -1,5 +1,6 @@
 ﻿using LightOn.Helpers;
 using LightOn.Models;
+using System.Collections.Concurrent;
 
 namespace LightOn.Services.Interfaces
 {
@@ -12,10 +13,10 @@ namespace LightOn.Services.Interfaces
         Task<ServiceResponse<ApplianceUsageHistory>> CreateAsync(ApplianceUsageHistory usageHistory);
         Task<ServiceResponse<ApplianceUsageHistory>> UpdateAsync(ApplianceUsageHistory usageHistory);
         Task<ServiceResponse<ApplianceUsageHistory>> DeleteAsync(int id);
-        Task<ServiceResponse<Dictionary<string, object>>> HistogramByUserConsumption(int id, DateTime startDate);
-        Task<ServiceResponse<Dictionary<string, object>>> LineChartByUserConsumption(int id, DateTime startDate);
-        Task<ServiceResponse<Dictionary<string, object>>> BarChartByUserConsumption(int id, DateTime startDate);
-        Task<ServiceResponse<Dictionary<string, object>>> ScatterChartByUserConsumption(int id, DateTime startDate);
-        Task<ServiceResponse<Dictionary<string, object>>> PieChartByUserConsumption(int id, DateTime startDate);
+        Task<ServiceResponse<ConcurrentDictionary<string, object>>> HistogramByUserConsumption(int id, DateTime startDate);
+        Task<ServiceResponse<ConcurrentDictionary<string, object>>> LineChartByUserConsumption(int id, DateTime startDate);
+        Task<ServiceResponse<ConcurrentDictionary<string, object>>> BarChartByUserConsumption(int id, DateTime startDate);
+        Task<ServiceResponse<ConcurrentDictionary<string, object>>> ScatterChartByUserConsumption(int id, DateTime startDate);
+        Task<ServiceResponse<ConcurrentDictionary<string, object>>> PieChartByUserConsumption(int id, DateTime startDate);
     }
 }

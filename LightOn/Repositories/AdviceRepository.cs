@@ -4,7 +4,7 @@ using LightOn.Models;
 using LightOn.Repositories.Interfaces;
 using LightOn.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-
+#pragma warning disable 8602
 namespace LightOn.Repositories
 {
     public class AdviceRepository : IAdviceRepository

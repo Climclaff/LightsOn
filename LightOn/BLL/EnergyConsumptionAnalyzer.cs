@@ -1,6 +1,7 @@
 ﻿using LightOn.BLL.Interfaces;
 using LightOn.BLL.Strategies;
 using LightOn.Models;
+using System.Collections.Concurrent;
 
 namespace LightOn.BLL
 {
@@ -23,7 +24,7 @@ namespace LightOn.BLL
             { ChartType.Scatter, new ScatterChartGenerator() }
         };
 
-        public Dictionary<string, object> GenerateChart(List<ApplianceUsageHistory> usageHistory, List<Appliance> appliances, ChartType chartType)
+        public ConcurrentDictionary<string, object> GenerateChart(List<ApplianceUsageHistory> usageHistory, List<Appliance> appliances, ChartType chartType)
         {
             if (chartGenerators.ContainsKey(chartType))
             {

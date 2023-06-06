@@ -33,16 +33,19 @@ namespace LightOn.Controllers
                 return BadRequest();
             }
             var result = await _service.HistogramByUserConsumption(user.Id, startDate);
-            if (result.Success)
+            if (result.NotFound)
             {
-                if (result.Data == null)
+                return Ok(new
                 {
-                    return NotFound();
-                }
+                    data = "No data to display"
+                });
+            }
+            if (result.Success)
+            {             
                 return Ok(new
                 {
                     result.Data
-                });
+                });;
             }
             return StatusCode(500, result.ErrorMessage);
         }
@@ -59,12 +62,17 @@ namespace LightOn.Controllers
                 return BadRequest();
             }
             var result = await _service.LineChartByUserConsumption(user.Id, startDate);
+            if (result.NotFound)
+            {
+                return Ok(new
+                {
+                    data = "No data to display"
+                });
+            }
             if (result.Success)
             {
-                if (result == null)
-                {
-                    return NotFound();
-                }
+              
+ 
                 return Ok(result.Data);
             }
             return StatusCode(500, result.ErrorMessage);
@@ -82,12 +90,16 @@ namespace LightOn.Controllers
                 return BadRequest();
             }
             var result = await _service.BarChartByUserConsumption(user.Id, startDate);
+            if (result.NotFound)
+            {
+                return Ok(new
+                {
+                    data = "No data to display"
+                });
+            }
             if (result.Success)
             {
-                if (result == null)
-                {
-                    return NotFound();
-                }
+              
                 return Ok(result.Data);
             }
             return StatusCode(500, result.ErrorMessage);
@@ -105,12 +117,16 @@ namespace LightOn.Controllers
                 return BadRequest();
             }
             var result = await _service.ScatterChartByUserConsumption(user.Id, startDate);
+            if (result.NotFound)
+            {
+                return Ok(new
+                {
+                    data = "No data to display"
+                });
+            }
             if (result.Success)
             {
-                if (result == null)
-                {
-                    return NotFound();
-                }
+               
                 return Ok(result.Data);
             }
             return StatusCode(500, result.ErrorMessage);
@@ -128,12 +144,16 @@ namespace LightOn.Controllers
                 return BadRequest();
             }
             var result = await _service.PieChartByUserConsumption(user.Id, startDate);
+            if (result.NotFound)
+            {
+                return Ok(new
+                {
+                    data = "No data to display"
+                });
+            }
             if (result.Success)
             {
-                if (result == null)
-                {
-                    return NotFound();
-                }
+         
                 return Ok(result.Data);
             }
             return StatusCode(500, result.ErrorMessage);

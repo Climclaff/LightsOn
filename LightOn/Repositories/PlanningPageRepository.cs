@@ -5,7 +5,7 @@ using LightOn.Repositories.Interfaces;
 using LightOn.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
-
+#pragma warning disable 8602
 namespace LightOn.Repositories
 {
     public class PlanningPageRepository : IPlanningPageRepository

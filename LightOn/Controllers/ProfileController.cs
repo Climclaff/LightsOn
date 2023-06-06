@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-# pragma warning disable CS8601, CS8602
+# pragma warning disable CS8601, CS8602, CS8618
 namespace LightOn.Controllers
 {
     [Route("api/[controller]")]
