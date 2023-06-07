@@ -116,7 +116,8 @@ namespace LightOn.Controllers.Auth
                             {
                                 token = new JwtSecurityTokenHandler().WriteToken(token),
                                 isAdmin = adminClaim.Value,
-                                isPremium = newPremiumClaim.Value
+                                isPremium = newPremiumClaim.Value,
+                                userId = user.Id
                             });
                         }                      
                     }
@@ -124,7 +125,8 @@ namespace LightOn.Controllers.Auth
                     {
                         token = new JwtSecurityTokenHandler().WriteToken(token),
                         isAdmin = adminClaim.Value,
-                        isPremium = premiumClaim.Value
+                        isPremium = premiumClaim.Value,
+                        userId = user.Id
                     });
                     }
                 

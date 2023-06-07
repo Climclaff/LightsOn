@@ -29,7 +29,7 @@ namespace LightOn.BLL
                 if (userEnergyConsumptionPerSquareFoot > averageEnergyConsumptionPerSquareFoot)
                 {
                     tips.TryAdd("EnergyConsumption", new List<string> { $"Your energy consumption per square foot is " +
-                        $"{((userEnergyConsumptionPerSquareFoot-averageEnergyConsumptionPerSquareFoot)/averageEnergyConsumptionPerSquareFoot)*100} " +
+                        $"{(((userEnergyConsumptionPerSquareFoot-averageEnergyConsumptionPerSquareFoot)/averageEnergyConsumptionPerSquareFoot)*100).ToString("0.00")} " +
                         $"% higher than the average. Consider taking steps to improve energy efficiency." });
                 }
                 else
@@ -38,7 +38,7 @@ namespace LightOn.BLL
                 }
                 SetPeakUsageTime(usages);
                 // Identify heaviest appliance usages
-                List<ApplianceUsageHistory> heaviestUsages = GetHeaviestApplianceUsages(usages);
+                List<ApplianceUsageHistory> heaviestUsages = GetHeaviestApplianceUsages(user, usages);
                 if (heaviestUsages.Any())
                 {
                     List<string> applianceTips = new List<string>();
@@ -72,19 +72,19 @@ namespace LightOn.BLL
         }
 
 
-        private List<ApplianceUsageHistory> GetHeaviestApplianceUsages(ConcurrentDictionary<User, List<ApplianceUsageHistory>> usages)
+        private List<ApplianceUsageHistory> GetHeaviestApplianceUsages(User user, ConcurrentDictionary<User, List<ApplianceUsageHistory>> usages)
         {
+            var userUsages = usages[user];
             var maxEnergyConsumption = usages.SelectMany(x => x.Value).Max(u => u.EnergyConsumed);
             var maxUsageDuration = usages.SelectMany(x => x.Value).Max(u => (u.UsageEndDate - u.UsageStartDate).TotalMinutes);
 
             // Calculate a score for each appliance usage based on energy consumption and usage duration
-            List<ApplianceUsageScore> usageScores = usages.SelectMany(x => x.Value)
-                .Select(usage => new ApplianceUsageScore
-                {
-                    ApplianceUsage = usage,
-                    Score = CalculateApplianceUsageScore(usage, maxEnergyConsumption, maxUsageDuration)
-                })
-                .ToList();
+            List<ApplianceUsageScore> usageScores = userUsages.Select(usage => new ApplianceUsageScore
+            {
+                ApplianceUsage = usage,
+                Score = CalculateApplianceUsageScore(usage, maxEnergyConsumption, maxUsageDuration)
+            })
+        .ToList();
 
             // Sort the appliance usages based on their scores in descending order
             List<ApplianceUsageHistory> heaviestUsages = usageScores.OrderByDescending(x => x.Score)
@@ -102,7 +102,7 @@ namespace LightOn.BLL
 
             // Normalize energy consumption and usage duration to a scale of 0 to 1
             double normalizedEnergyConsumption = usage.EnergyConsumed / maximumEnergyConsumption;
-            double normalizedUsageDuration = (usage.UsageEndDate-usage.UsageStartDate).TotalMinutes / maximumUsageDuration;
+            double normalizedUsageDuration = (usage.UsageEndDate - usage.UsageStartDate).TotalMinutes / maximumUsageDuration;
 
 
 
@@ -114,7 +114,7 @@ namespace LightOn.BLL
 
             // Calculate the score by applying the weights to the normalized values
             double score = (energyWeight * normalizedEnergyConsumption) +
-                           (durationWeight * normalizedUsageDuration) + 
+                           (durationWeight * normalizedUsageDuration) +
                             peakUsageFactor;
 
             return score;
@@ -142,17 +142,24 @@ namespace LightOn.BLL
         private void SetPeakUsageTime(ConcurrentDictionary<User, List<ApplianceUsageHistory>> usages)
         {
             var peakHourGroups = usages.SelectMany(u => u.Value)
-                                       .GroupBy(u => u.UsageStartDate.Hour)
-                                       .OrderByDescending(g => g.Sum(u => u.EnergyConsumed));
+                                 .GroupBy(u => u.UsageStartDate.Hour)
+                                 .Select(g => new
+                                 {
+                                     Hour = g.Key,
+                                     TotalEnergyConsumed = g.Sum(u => u.EnergyConsumed)
+                                 })
+                                 .OrderByDescending(g => g.TotalEnergyConsumed);
 
             var peakHourGroup = peakHourGroups.FirstOrDefault();
 
             if (peakHourGroup != null)
             {
-                PeakLoadHour = TimeSpan.FromHours(peakHourGroup.Key);
+                PeakLoadHour = TimeSpan.FromHours(peakHourGroup.Hour);
             }
-
-            PeakLoadHour = TimeSpan.FromHours(18); // Default peak hour (6 PM)
+            else
+            {
+                PeakLoadHour = TimeSpan.FromHours(18); // Default peak hour (6 PM)
+            }
         }
     }
 }
