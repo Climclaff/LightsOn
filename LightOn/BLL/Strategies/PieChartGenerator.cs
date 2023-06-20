@@ -26,10 +26,9 @@ namespace LightOn.BLL.Strategies
 
         private string GetApplianceName(int? applianceId, List<Appliance> applianceNames)
         {
-            // Find the appliance name based on the appliance ID
             var appliance = applianceNames.FirstOrDefault(a => a.Id == applianceId);
 
-            // If the appliance is found, return its name; otherwise, return an empty string or handle as desired
+
             return appliance?.Name ?? string.Empty;
         }
     }

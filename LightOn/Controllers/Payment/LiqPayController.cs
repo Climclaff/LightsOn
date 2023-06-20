@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Security.Claims;
 using System.Text;
-
+#pragma warning disable CS8602
 namespace LightOn.Controllers.Payment
 {
     [Route("api/[controller]")]
@@ -17,15 +18,18 @@ namespace LightOn.Controllers.Payment
     public class LiqPayController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
-        public LiqPayController(UserManager<User> userManager)
+        private readonly ApplicationDbContext _context;
+        public LiqPayController(UserManager<User> userManager, ApplicationDbContext context)
         {
+
             _userManager = userManager;
+            _context = context;
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
         [HttpPost]
         [Route("Payment")]
-        public async Task<IActionResult> Payment(string data, string signature)
+        public async Task<IActionResult> Payment()
         {
             var request_dictionary = Request.Form.Keys.ToDictionary(key => key, key => Request.Form[key]);
 
@@ -44,23 +48,37 @@ namespace LightOn.Controllers.Payment
 
             if (request_data_dictionary["status"] == "sandbox" || request_data_dictionary["status"] == "success")
             {
-                var username = User.FindFirst(ClaimTypes.Name)?.Value;
-                var user = await _userManager.FindByNameAsync(username);
+                string liqPhone = "+" + request_data_dictionary["sender_phone"];
+                var user = await _context.Users.Where(x => x.PhoneNumber == liqPhone).FirstOrDefaultAsync();
                 if (user == null)
                 {
                     return BadRequest();
                 }
                 var databaseClaims = await _userManager.GetClaimsAsync(user);
                 var premiumClaim = databaseClaims.Where(u => u.Type == "IsPremium").First();
-                var value = DateTime.Now.AddMonths(1);
-                var newPremiumClaim = new Claim("IsPremium", value.ToString());
-                await _userManager.ReplaceClaimAsync(user, premiumClaim, newPremiumClaim);          
-                return Ok();
+                if (premiumClaim.Value == "false")
+                {
+                    var value = DateTime.Now.AddMonths(1);
+                    var newPremiumClaim = new Claim("IsPremium", value.ToString());
+                    await _userManager.ReplaceClaimAsync(user, premiumClaim, newPremiumClaim);
+                    return Ok(new
+                    {
+                        isPremium = newPremiumClaim.Value
+                    });
+                }
+                else
+                {
+                    var value = Convert.ToDateTime(premiumClaim.Value).AddMonths(1);
+                    var newPremiumClaim = new Claim("IsPremium", value.ToString());
+                    await _userManager.ReplaceClaimAsync(user, premiumClaim, newPremiumClaim);
+                    return Ok(new
+                    {
+                        isPremium = newPremiumClaim.Value
+                    });
+                }
             }
 
             return StatusCode(500,"An error occured during payment process");
-
-
         }
     }
 }

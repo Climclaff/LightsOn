@@ -49,7 +49,7 @@ namespace LightOnEmulator
             {
                 using (ClientWebSocket webSocket = new ClientWebSocket())
                 {
-                    Uri serverUri = new Uri($"wss://localhost:7014/ws?id={transformer.Id}");
+                    Uri serverUri = new Uri($"wss://localhost:5001/ws?id={transformer.Id}");
                     try
                     {
                         await webSocket.ConnectAsync(serverUri, CancellationToken.None);
@@ -75,7 +75,7 @@ namespace LightOnEmulator
                             }
                             string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
 
-                            // Handle the received message
+
                             Console.WriteLine($"Received message: {message}");
 
 

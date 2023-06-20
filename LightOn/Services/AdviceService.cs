@@ -39,18 +39,20 @@ namespace LightOn.Services
                 else
                 {
                     var transf = await _repository.GetTransformerByUserAsync(id);
-                    var users = await _repository.GetUsersByTransformerAsync(id);
+                    var users = await _repository.GetUsersByTransformerAsync((int)transf);
                     var buildings = await _repository.GetBuildingsByUsersAsync(users);
                     var currentUser = users.Where(u => u.Id == id).FirstOrDefault();
                     ConcurrentDictionary<User, List<ApplianceUsageHistory>> usages = new ConcurrentDictionary<User, List<ApplianceUsageHistory>>();
                     foreach (var user in users)
                     {
                         var result = await _usageRepository.GetByUserAsync(user.Id);
-                        result = result.Where(x => x.UsageStartDate >= DateTime.Now - TimeSpan.FromDays(7)).ToList();
-                        usages.TryAdd(user, result);
+                        result = result.Where(x => x.UsageStartDate >= DateTime.Now - TimeSpan.FromDays(30)).ToList();
+                        if (result.Count > 0)
+                            usages.TryAdd(user, result);
                     }
 
                     EnergyEfficiencyMeter efficiencyMeter = new EnergyEfficiencyMeter();
+                    
                     var tips = efficiencyMeter.GenerateEnergyEfficiencyTips(currentUser, usages, buildings);
 
                     var cacheEntryOptions = new DistributedCacheEntryOptions()

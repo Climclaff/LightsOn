@@ -105,32 +105,6 @@ namespace LightOn.Controllers
             return StatusCode(500, result.ErrorMessage);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet]
-        [Route("ScatterChartByUserConsumption")]
-        public async Task<IActionResult> ScatterChartByUserConsumption(DateTime startDate)
-        {
-            var username = User.FindFirst(ClaimTypes.Name)?.Value;
-            var user = await _userManager.FindByNameAsync(username);
-            if (user == null)
-            {
-                return BadRequest();
-            }
-            var result = await _service.ScatterChartByUserConsumption(user.Id, startDate);
-            if (result.NotFound)
-            {
-                return Ok(new
-                {
-                    data = "No data to display"
-                });
-            }
-            if (result.Success)
-            {
-               
-                return Ok(result.Data);
-            }
-            return StatusCode(500, result.ErrorMessage);
-        }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]

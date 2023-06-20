@@ -16,7 +16,6 @@ namespace LightOn.Services.Interfaces
         Task<ServiceResponse<ConcurrentDictionary<string, object>>> HistogramByUserConsumption(int id, DateTime startDate);
         Task<ServiceResponse<ConcurrentDictionary<string, object>>> LineChartByUserConsumption(int id, DateTime startDate);
         Task<ServiceResponse<ConcurrentDictionary<string, object>>> BarChartByUserConsumption(int id, DateTime startDate);
-        Task<ServiceResponse<ConcurrentDictionary<string, object>>> ScatterChartByUserConsumption(int id, DateTime startDate);
         Task<ServiceResponse<ConcurrentDictionary<string, object>>> PieChartByUserConsumption(int id, DateTime startDate);
     }
 }

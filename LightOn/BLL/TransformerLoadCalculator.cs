@@ -47,10 +47,13 @@ namespace LightOn.BLL
         {
             float totalPercentage = 0;
             foreach (var appliance in appliances) {
-                float kWtPower = (float)appliance.Power / 1000;
-                float apparentPower = kWtPower / appliance.PowerFactor;
-                float loadPercentage = (apparentPower / transformer.MaxLoad) * 100;
-                totalPercentage += loadPercentage;
+                if (appliance.Power > 0 && appliance.PowerFactor > 0)
+                {
+                    float kWtPower = (float)appliance.Power / 1000;
+                    float apparentPower = kWtPower / appliance.PowerFactor;
+                    float loadPercentage = (apparentPower / transformer.MaxLoad) * 100;
+                    totalPercentage += loadPercentage;
+                }
             }
             return totalPercentage;
         }

@@ -83,7 +83,7 @@ namespace LightOn.BLL
             {
                 ApplianceUsage = usage,
                 Score = CalculateApplianceUsageScore(usage, maxEnergyConsumption, maxUsageDuration)
-            })
+            }).DistinctBy(x => x.ApplianceUsage.ApplianceId)
         .ToList();
 
             // Sort the appliance usages based on their scores in descending order

@@ -42,7 +42,7 @@ namespace LightOn.Controllers.Auth
             var userExists = await _userManager.FindByNameAsync(model.Email);
             if (userExists != null)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, new
                 { Status = "Error", Message = "User already exists" });
             }
             if (!ModelState.IsValid)
@@ -108,7 +108,7 @@ namespace LightOn.Controllers.Auth
                     if (DateTime.TryParse(premiumClaim.Value, out dateTime))
                     {
                         
-                        if (dateTime > DateTime.Now)
+                        if (DateTime.Now > dateTime)
                         {
                             var newPremiumClaim = new Claim("IsPremium", "false");
                             await _userManager.ReplaceClaimAsync(user, premiumClaim, newPremiumClaim);
@@ -236,7 +236,7 @@ namespace LightOn.Controllers.Auth
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
             var firstName = info.Principal.FindFirstValue(ClaimTypes.GivenName);
             var lastName = info.Principal.FindFirstValue(ClaimTypes.Surname);
-
+            
             var user = await _userManager.FindByEmailAsync(email);
             if (user != null)
             {
@@ -260,19 +260,33 @@ namespace LightOn.Controllers.Auth
                     signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
                 if (authClaims.Count > 0)
                 {
-                    if (authClaims.First().Value == "true")
-                        return Ok(new
-                        {
-                            token = new JwtSecurityTokenHandler().WriteToken(token),
-                            isAdmin = true
-                        });
-                }
+                    var adminClaim = authClaims.Where(u => u.Type == "IsAdmin").First();
+                    var premiumClaim = authClaims.Where(u => u.Type == "IsPremium").First();
+                    DateTime dateTime;
+                    if (DateTime.TryParse(premiumClaim.Value, out dateTime))
+                    {
 
-                return Ok(new
-                {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),
-                    isAdmin = false
-                });
+                        if (DateTime.Now > dateTime)
+                        {
+                            var newPremiumClaim = new Claim("IsPremium", "false");
+                            await _userManager.ReplaceClaimAsync(user, premiumClaim, newPremiumClaim);
+                            return Ok(new
+                            {
+                                token = new JwtSecurityTokenHandler().WriteToken(token),
+                                isAdmin = adminClaim.Value,
+                                isPremium = newPremiumClaim.Value,
+                                userId = user.Id
+                            });
+                        }
+                    }
+                    return Ok(new
+                    {
+                        token = new JwtSecurityTokenHandler().WriteToken(token),
+                        isAdmin = adminClaim.Value,
+                        isPremium = premiumClaim.Value,
+                        userId = user.Id
+                    });
+                }
             }
 
             // Create a new user with the necessary information
@@ -283,8 +297,12 @@ namespace LightOn.Controllers.Auth
                 FirstName = firstName,
                 LastName = lastName
             };
-
-            return Ok(newUser);
+            var googleToken = info.Properties.GetTokenValue("access_token");
+            return Ok(new
+            {
+                user = newUser,
+                token = googleToken
+            });
         }
         [AllowAnonymous]
         [HttpPost]
@@ -300,7 +318,7 @@ namespace LightOn.Controllers.Auth
 
             return Challenge(authenticationProperties, GoogleDefaults.AuthenticationScheme);
         }
-        [AllowAnonymous]
+        [Authorize(AuthenticationSchemes = GoogleDefaults.AuthenticationScheme)]
         [HttpPost]
         [Route("CompleteGoogleRegister")]
         public async Task<IActionResult> CompleteGoogleRegister([FromBody] GoogleRegisterModel model)
@@ -333,9 +351,10 @@ namespace LightOn.Controllers.Auth
             if (!result.Succeeded)
             {
                 return StatusCode(StatusCodes.Status422UnprocessableEntity, new
-                { Status = "Something went wrong", Message = "Make sure the password contains numbers, upper and lower case letters, special symbols" });
+                { Status = "Something went wrong", Message = "An error occured while completing google user creation process" });
             }
             await _userManager.AddClaimAsync(user, new Claim("IsAdmin", "false"));
+            await _userManager.AddClaimAsync(user, new Claim("IsPremium", "false"));
             return Ok(new { Status = "Success", Message = "User created" });
         }
 

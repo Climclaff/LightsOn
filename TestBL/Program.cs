@@ -5,7 +5,7 @@ using LightOn.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Concurrent;
 using static LightOn.BLL.EnergyConsumptionAnalyzer;
-
+#pragma warning disable CS8600, CS8602
 namespace TestBL
 {
 
@@ -149,19 +149,13 @@ namespace TestBL
 
             ConcurrentDictionary<User, List<ApplianceUsageHistory>> usageData = new ConcurrentDictionary<User, List<ApplianceUsageHistory>>();
 
-
             usageData.TryAdd(user1, new List<ApplianceUsageHistory> { usageHistory1, usageHistory2, usageHistory3 });
-
             usageData.TryAdd(user2, new List<ApplianceUsageHistory> { usageHistory4, usageHistory5, usageHistory6 });
-
             usageData.TryAdd(user3, new List<ApplianceUsageHistory> { usageHistory7, usageHistory8, usageHistory9 });
-
 
             List<Building> buildingList = new List<Building> { building1, building2, building3 };
 
-
             EnergyEfficiencyMeter efficiencyMeter = new EnergyEfficiencyMeter();
-
 
             ConcurrentDictionary<string, List<string>> tips = efficiencyMeter.GenerateEnergyEfficiencyTips(user3, usageData, buildingList);
 
@@ -177,7 +171,6 @@ namespace TestBL
 
             Assert.IsTrue(tips3.TryGetValue("ReduceApplianceUsage", out List<string> applianceTips3));
             Console.WriteLine("Assertion for User 3: " + (applianceTips3.SequenceEqual(new List<string> { "9", "7", "8" }) ? "Passed" : "Failed"));
-
         }
 
         static void TestChart()
@@ -234,13 +227,8 @@ namespace TestBL
         }
         static void Main(string[] args)
         {
-
             TestEnergyEfficientMeter();
             TestChart();
-
-
-
-
         }
     }
 }

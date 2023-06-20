@@ -13,7 +13,6 @@ namespace LightOn.BLL
             Line,
             Bar,
             Pie,
-            Scatter
         }
         private Dictionary<ChartType, IChartGenerator> chartGenerators = new Dictionary<ChartType, IChartGenerator>
         {
@@ -21,14 +20,13 @@ namespace LightOn.BLL
             { ChartType.Line, new LineChartGenerator() },
             { ChartType.Bar, new BarChartGenerator() },
             { ChartType.Pie, new PieChartGenerator() },
-            { ChartType.Scatter, new ScatterChartGenerator() }
         };
 
-        public ConcurrentDictionary<string, object> GenerateChart(List<ApplianceUsageHistory> usageHistory, List<Appliance> appliances, ChartType chartType)
+        public ConcurrentDictionary<string, object> GenerateChart(List<ApplianceUsageHistory> usageHistory,
+            List<Appliance> appliances, ChartType chartType)
         {
             if (chartGenerators.ContainsKey(chartType))
             {
-                // Get the corresponding chart generator
                 var chartGen = chartGenerators[chartType];
 
                 return chartGen.GenerateChart(usageHistory, appliances);

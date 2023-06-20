@@ -54,7 +54,8 @@ namespace LightOn.Controllers
                 {
 
                     string json = Encoding.UTF8.GetString(dictionaryByteArray);
-                    ConcurrentDictionary<DateTime, float> dictionary = JsonSerializer.Deserialize<ConcurrentDictionary<DateTime, float>>(json);
+                    ConcurrentDictionary<DateTime, float> dictionary = 
+                    JsonSerializer.Deserialize<ConcurrentDictionary<DateTime, float>>(json);
                     var currentLoad = await _service.GetTransformerLoad((int)result.Data);
                     return Ok(new
                     {

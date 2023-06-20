@@ -4,6 +4,9 @@ using LightOn.Models;
 using LightOn.Models.ClientModels;
 using LightOn.Repositories.Interfaces;
 using LightOn.Services.Interfaces;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Collections.Concurrent;
+using System.Text;
 
 namespace LightOn.Services
 {
@@ -11,16 +14,23 @@ namespace LightOn.Services
     {
         private readonly IProfileRepository _repository;
         private readonly ILoggingService _logger;
-        public ProfileService(IProfileRepository repository, ILoggingService logger)
+        private readonly IDistributedCache _cache;
+        public ProfileService(IProfileRepository repository, IDistributedCache cache, ILoggingService logger)
         {
             _repository = repository;
             _logger = logger;
+            _cache = cache;
         }
 
         public async Task<ServiceResponse<bool>> ChangeLocationAsync(int userId, int regionId, int districtId, int townId, int streetId, int buildingId)
         {
             try
             {
+                var dictionaryByteArray = await _cache.GetAsync(userId.ToString() + "Tips");
+                if (dictionaryByteArray != null)
+                {
+                    await _cache.RemoveAsync(userId.ToString() + "Tips");
+                }
                 await _repository.ChangeLocationAsync(userId, regionId, districtId, townId, streetId, buildingId);
                 return new ServiceResponse<bool> { Success = true };
             }

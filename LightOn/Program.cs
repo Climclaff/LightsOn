@@ -29,15 +29,18 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(builder =>
     {
         builder.WithOrigins(
-            "https://2da6-91-215-144-179.ngrok-free.app", 
+            "https://d255-91-215-144-179.ngrok-free.app", 
             "https://localhost:5001",
             "http://localhost:3000",
             "https://localhost:7014",
-            "https://accounts.google.com")
+            "https://accounts.google.com",
+            "https://www.liqpay.ua",
+            "https://192.168.31.182")
                .AllowAnyMethod()
                .AllowAnyHeader()
-               .AllowCredentials();
-        
+               .AllowCredentials().
+               WithExposedHeaders("Cross-Origin-Opener-Policy");
+
     });
 });
 var connectionString = builder.Configuration.GetConnectionString("LightsOnDb");
@@ -78,6 +81,9 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("IsAdminPolicy",
         policy => policy.RequireAssertion(context => context.User.HasClaim(c => (c.Type == "IsAdmin" && c.Value == "true"))));
+    options.AddPolicy("IsPremiumPolicy",
+        policy => policy.RequireAssertion(context => context.User.HasClaim(c => (c.Type == "IsPremium" && c.Value != "false"))));
+
 });
 
 builder.Services.AddDistributedSqlServerCache(options =>
@@ -118,7 +124,7 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IPlanningPageService, PlanningPageService>();
 builder.Services.AddScoped<IAdviceService, AdviceService>();
 
-//builder.Services.AddHostedService<TransformerLoadService>(); //TURN ON WEBSOCKET COMMUNICATION HERE
+builder.Services.AddHostedService<TransformerLoadService>(); //TURN ON WEBSOCKET COMMUNICATION HERE
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

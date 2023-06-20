@@ -22,7 +22,7 @@ namespace LightOn.Controllers
             _adviceService = adviceService;
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "IsPremiumPolicy")]
         [HttpGet]
         [Route("GenerateTips")]
         public async Task<IActionResult> GenerateTips()

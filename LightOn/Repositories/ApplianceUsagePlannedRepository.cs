@@ -28,6 +28,11 @@ namespace LightOn.Repositories
         {
             try
             {
+                bool result = await CheckIntersectingUsageExists(usagePlan);
+                if(result == true)
+                {
+                    throw new RepositoryException("You have already set this appliance for the given time");
+                }
                 await _context.ApplianceUsagePlanneds.AddAsync(usagePlan);
                 await _context.SaveChangesAsync();
                 return true;
@@ -261,6 +266,19 @@ namespace LightOn.Repositories
                 
                 await _context.SaveChangesAsync();
             }
+        }
+
+        private async Task<bool> CheckIntersectingUsageExists(ApplianceUsagePlanned usagePlanned)
+        {
+             return await _context.ApplianceUsagePlanneds
+                .AnyAsync(aup =>
+                    aup.ApplianceId == usagePlanned.ApplianceId &&
+                    (
+                        (usagePlanned.UsageStartDate >= aup.UsageStartDate && usagePlanned.UsageStartDate <= aup.UsageEndDate) ||
+                        (usagePlanned.UsageEndDate >= aup.UsageStartDate && usagePlanned.UsageEndDate <= aup.UsageEndDate) ||
+                        (usagePlanned.UsageStartDate <= aup.UsageStartDate && usagePlanned.UsageEndDate >= aup.UsageEndDate)
+                    )
+                );
         }
 
 

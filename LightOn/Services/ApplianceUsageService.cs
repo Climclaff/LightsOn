@@ -193,25 +193,6 @@ namespace LightOn.Services
                 return new ServiceResponse<ConcurrentDictionary<string, object>> { Success = false, ErrorMessage = ex.Message };
             }
         }
-        public async Task<ServiceResponse<ConcurrentDictionary<string, object>>> ScatterChartByUserConsumption(int id, DateTime startDate)
-        {
-            try
-            {
-                var usagePlans = await _repository.GetByUserAsync(id);
-                usagePlans = usagePlans.Where(plan => plan.UsageStartDate >= startDate).ToList();
-                if (usagePlans.Count == 0)
-                {
-                    return new ServiceResponse<ConcurrentDictionary<string, object>> { Success = false, NotFound = true };
-                }
-                var result = analyzer.GenerateChart(usagePlans, null, EnergyConsumptionAnalyzer.ChartType.Scatter);
-                return new ServiceResponse<ConcurrentDictionary<string, object>> { Success = true, Data = result };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"An error occurred while getting scatter chart for user with id {id}", ex);
-                return new ServiceResponse<ConcurrentDictionary<string, object>> { Success = false, ErrorMessage = ex.Message };
-            }
-        }
         public async Task<ServiceResponse<ConcurrentDictionary<string, object>>> PieChartByUserConsumption(int id, DateTime startDate)
         {
             try

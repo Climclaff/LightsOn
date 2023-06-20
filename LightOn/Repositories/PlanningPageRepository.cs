@@ -49,5 +49,7 @@ namespace LightOn.Repositories
                 return measurement.CurrentLoad;            
         }
 
+
+
     }
 }

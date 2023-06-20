@@ -30,11 +30,19 @@ namespace LightOn.Services.HostedServices
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
-                    await CalculateTransformerLoad(context, cache);
+                    try
+                    {
+                        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                        var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
+                        await CalculateTransformerLoad(context, cache);
 
-                    await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                        await Task.Delay(TimeSpan.FromMinutes(15), stoppingToken);
+                    }
+                    catch (Exception)
+                    {
+                        throw new Exception($"Error occured during execution of main background service method");
+                        
+                    }
                 }
             }
         }
@@ -49,7 +57,7 @@ namespace LightOn.Services.HostedServices
                 throw new Exception($"Failed to send simulation data to transformer with id {id}");
             }
         }
-        public async Task CalculateTransformerLoad(ApplicationDbContext _context, IDistributedCache cache)
+        private async Task CalculateTransformerLoad(ApplicationDbContext _context, IDistributedCache cache)
         {
             try
             {
